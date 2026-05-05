@@ -52,6 +52,7 @@ export default function Home() {
   const [profiles, setProfiles] =
     useState<AssignmentProfile[]>(getSavedProfiles);
   const [output, setOutput] = useState(PLACEHOLDER_OUTPUT);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const selectedProfileData = useMemo(
     () => profiles.find((profile) => profile.name === selectedProfile),
@@ -113,8 +114,62 @@ export default function Home() {
     setSelectedProfile("");
   }
 
-  function generateFeedback() {
-    setOutput(PLACEHOLDER_OUTPUT);
+  async function generateFeedback() {
+    const requiredFields = [
+      { label: "Student Name", value: studentName },
+      { label: "Course / Grade Level", value: courseLevel },
+      { label: "Assignment Prompt", value: assignmentPrompt },
+      {
+        label: "Assignment Requirements / Instructions",
+        value: assignmentRequirements,
+      },
+      { label: "Student Submission", value: studentSubmission },
+    ];
+    const missingFields = requiredFields
+      .filter((field) => !field.value.trim())
+      .map((field) => field.label);
+
+    if (missingFields.length > 0) {
+      setOutput(`Please complete: ${missingFields.join(", ")}.`);
+      return;
+    }
+
+    setIsGenerating(true);
+    setOutput("Generating feedback...");
+
+    try {
+      const response = await fetch("/api/generate-feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode,
+          studentName,
+          courseLevel,
+          assignmentPrompt,
+          assignmentRequirements,
+          studentSubmission,
+          rubric,
+          citationStyle,
+        }),
+      });
+      const data = (await response.json()) as {
+        feedback?: string;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        setOutput(data.error ?? "Feedback generation failed.");
+        return;
+      }
+
+      setOutput(data.feedback ?? PLACEHOLDER_OUTPUT);
+    } catch {
+      setOutput("Feedback generation failed. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   async function copyOutput() {
@@ -331,11 +386,12 @@ export default function Home() {
             </section>
 
             <button
-              className="w-full rounded-md bg-[#16201f] px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-[#28433f]"
+              className="w-full rounded-md bg-[#16201f] px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-[#28433f] disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isGenerating}
               onClick={generateFeedback}
               type="button"
             >
-              Generate Feedback
+              {isGenerating ? "Generating Feedback..." : "Generate Feedback"}
             </button>
           </div>
 
