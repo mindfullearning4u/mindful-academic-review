@@ -8,6 +8,8 @@ export type AssignmentType =
   | "Reflection Paper"
   | "Peer Response"
   | "Final Project"
+  | "Final Paper"
+  | "Graduate-Level / Thesis / Dissertation"
   | "Quiz Response"
   | "Short Answer";
 
@@ -44,33 +46,171 @@ Student Submission:
 ${request.studentSubmission}`.trim();
 }
 
-function formatAssignmentTypeGuidance(assignmentType: AssignmentType) {
-  const guidance: Record<AssignmentType, string> = {
-    "Discussion Post":
-      "Keep feedback concise and conversational. Emphasize whether the post answers the prompt, contributes a clear idea, uses course concepts, and invites meaningful discussion. Citation emphasis should be light unless sources are required.",
-    "Peer Response":
-      "Focus on engagement and contribution. Evaluate whether the response meaningfully addresses a classmate's ideas, extends the conversation, asks useful questions, and maintains respectful academic tone.",
-    "Reflection Paper":
-      "Allow first-person voice when the assignment calls for personal reflection. Emphasize insight, connection to course concepts, specificity, and growth rather than formal essay structure alone.",
-    Essay:
-      "Evaluate thesis or main claim, organization, paragraph development, evidence, analysis, and clarity. Keep academic rigor steady without over-expanding the feedback.",
-    "Research Paper":
-      "Use stronger academic rigor. Evaluate organization, thesis, evidence, scholarly support, source quality, citation accuracy, and reference formatting. Give citation and research remediation more weight.",
-    "Case Assignment":
-      "Emphasize analysis and application. Evaluate how well the student applies course concepts to the case, supports decisions, considers relevant details, and explains practical implications.",
-    "Final Project":
-      "Treat this as a higher-stakes culminating assignment. Balance concise feedback with attention to synthesis, completeness, evidence, organization, polish, and final revision priorities.",
-    "Quiz Response":
-      "Keep feedback brief and focused. Emphasize accuracy, direct response to the question, use of relevant course concepts, and one clear next study or review step.",
-    "Short Answer":
-      "Keep feedback very concise. Focus on whether the response directly answers the question, uses relevant support, and shows clear understanding without expecting full essay development.",
-  };
+type AssignmentBehavior = {
+  evaluate: string[];
+  avoid?: string[];
+  targetLength: string;
+  notes?: string;
+};
+
+const ASSIGNMENT_BEHAVIOR_MATRIX: Record<AssignmentType, AssignmentBehavior> = {
+  "Discussion Post": {
+    evaluate: [
+      "answered the discussion prompt",
+      "understanding of the topic",
+      "citations/references if required",
+      "sufficient depth for discussion",
+    ],
+    avoid: [
+      "thesis/body/conclusion structure",
+      "full essay organization",
+    ],
+    targetLength: "50-90 words",
+    notes: "Keep the tone concise and conversational.",
+  },
+  "Peer Response": {
+    evaluate: [
+      "meaningful contribution",
+      "engagement with classmate",
+      "thoughtful response",
+      "professionalism",
+    ],
+    avoid: ["APA unless specifically required", "formal organization"],
+    targetLength: "30-60 words",
+  },
+  "Reflection Paper": {
+    evaluate: [
+      "insight",
+      "connection to topic",
+      "authenticity",
+      "clarity",
+      "personal engagement",
+    ],
+    targetLength: "50-100 words",
+    notes: "Allow first-person voice when appropriate for the assignment.",
+  },
+  Essay: {
+    evaluate: [
+      "organization",
+      "clarity",
+      "thesis/main idea",
+      "supporting detail",
+      "flow",
+      "assignment completion",
+    ],
+    targetLength: "75-125 words",
+  },
+  "Research Paper": {
+    evaluate: [
+      "organization",
+      "thesis/argument",
+      "evidence/support",
+      "APA/MLA if required",
+      "scholarly sources",
+      "critical thinking",
+    ],
+    avoid: ["excessive line-by-line critique"],
+    targetLength: "75-150 words",
+  },
+  "Case Assignment": {
+    evaluate: [
+      "application of concepts",
+      "analysis",
+      "problem-solving",
+      "real-world connection",
+      "critical thinking",
+    ],
+    targetLength: "75-125 words",
+  },
+  "Final Project": {
+    evaluate: [
+      "overall quality",
+      "completion of requirements",
+      "strengths",
+      "missing elements",
+      "overall academic performance",
+    ],
+    avoid: [
+      "extensive revision coaching because the course or project is ending",
+    ],
+    targetLength: "75-125 words",
+  },
+  "Final Paper": {
+    evaluate: [
+      "overall quality",
+      "completion of requirements",
+      "strengths",
+      "missing elements",
+      "overall academic performance",
+    ],
+    avoid: [
+      "extensive revision coaching because the course or project is ending",
+    ],
+    targetLength: "75-125 words",
+  },
+  "Graduate-Level / Thesis / Dissertation": {
+    evaluate: [
+      "scholarly rigor",
+      "depth of analysis",
+      "organization",
+      "research quality",
+      "academic tone",
+      "literature integration",
+      "methodology/argument quality",
+    ],
+    targetLength: "100-200 words only when necessary",
+    notes: "Stay concise even when evaluating advanced scholarly work.",
+  },
+  "Quiz Response": {
+    evaluate: [
+      "accuracy",
+      "direct response to the question",
+      "relevant course concepts",
+      "one clear study or review step",
+    ],
+    avoid: ["essay-style structure", "extended revision coaching"],
+    targetLength: "30-60 words",
+  },
+  "Short Answer": {
+    evaluate: [
+      "directly answers the question",
+      "relevant support",
+      "clear understanding",
+    ],
+    avoid: ["full essay development", "extended structure critique"],
+    targetLength: "30-60 words",
+  },
+};
+
+function formatAssignmentBehaviorMatrix(request: FeedbackRequest) {
+  if (request.rubric.trim()) {
+    return `
+Assignment Behavior Matrix:
+- A rubric was provided, so rubric categories override assignment-type behavior.
+- Base feedback primarily on the rubric only.
+- Give 1-2 concise sentences per rubric category.
+- Do not add broad assignment-type analysis unless it directly supports a rubric category.`.trim();
+  }
+
+  const behavior = ASSIGNMENT_BEHAVIOR_MATRIX[request.assignmentType];
+  const avoid = behavior.avoid?.length
+    ? `
+Do not evaluate:
+- ${behavior.avoid.join("\n- ")}`
+    : "";
+  const notes = behavior.notes ? `\n${behavior.notes}` : "";
 
   return `
-Assignment Type Intelligence:
-Assignment Type: ${assignmentType}
-Adjust tone, depth, feedback length, structure, academic rigor, citation emphasis, and remediation style for this assignment type.
-${guidance[assignmentType]}`.trim();
+Assignment Behavior Matrix:
+Assignment Type: ${request.assignmentType}
+Use these assignment-specific rules because no rubric was provided.
+
+Evaluate:
+- ${behavior.evaluate.join("\n- ")}${avoid}
+
+Target length: ${behavior.targetLength}.
+${notes}
+Focus only on the most relevant areas for this assignment type. Do not overanalyze or overwhelm the student.`.trim();
 }
 
 function formatGradingStandards(gradingStandards: string) {
@@ -104,11 +244,14 @@ Output Formatting:
 - Keep the visual presentation clean, calm, approachable, academically professional, and emotionally neutral/supportive.`.trim();
 }
 
-function formatLengthGuidance(mode: FeedbackMode) {
+function formatLengthGuidance(mode: FeedbackMode, request: FeedbackRequest) {
   const wordLimit =
     mode === "basic"
       ? "Basic Mode: 100-175 words maximum."
       : "Advanced Mode: 175-300 words maximum unless a rubric requires more detail.";
+  const rubricOverride = request.rubric.trim()
+    ? "Rubric override: keep each rubric category to 1-2 concise sentences."
+    : `Assignment behavior target: follow the ${request.assignmentType} target length from the Assignment Behavior Matrix.`;
 
   return `
 Length and Prioritization:
@@ -125,6 +268,7 @@ Length and Prioritization:
 - Make feedback practical, readable, and motivating.
 - The goal is not to explain everything; the goal is to guide the student toward the next best revision step.
 - ${wordLimit}
+- ${rubricOverride}
 - Do not exceed this limit unless absolutely necessary.`.trim();
 }
 
@@ -169,7 +313,7 @@ Follow these grading standards as system-level guidance before reviewing the stu
 
 ${formatGradingStandards(gradingStandards)}
 
-${formatAssignmentTypeGuidance(request.assignmentType)}
+${formatAssignmentBehaviorMatrix(request)}
 
 Review the student submission against the assignment prompt and requirements. Write feedback that is clear, specific, constructive, and appropriate for the course or grade level.
 
@@ -184,7 +328,7 @@ ${formatInstructorVoiceGuidance()}
 
 ${formatPersonalizationGuidance()}
 
-${formatLengthGuidance("basic")}
+${formatLengthGuidance("basic", request)}
 
 ${formatOutputGuidance()}
 
@@ -197,11 +341,12 @@ export function buildAdvancedPrompt(
   request: FeedbackRequest,
   gradingStandards: string,
 ) {
+  const hasRubric = Boolean(request.rubric.trim());
   const rubricInstruction = request.rubric.trim()
     ? `Rubric:
 ${request.rubric}
 
-Use the rubric to provide a rubric-aligned evaluation. Reference rubric criteria where relevant, but do not invent point values or final grades unless the rubric explicitly provides them.`
+Use the rubric to provide a rubric-aligned evaluation. Reference rubric criteria where relevant, but do not invent point values or final grades unless the rubric explicitly provides them. Keep each rubric category to 1-2 concise sentences.`
     : "No rubric was provided. Do not invent rubric criteria or scores.";
 
   const citationInstruction =
@@ -216,27 +361,21 @@ Follow these grading standards as system-level guidance before reviewing the stu
 
 ${formatGradingStandards(gradingStandards)}
 
-${formatAssignmentTypeGuidance(request.assignmentType)}
+${formatAssignmentBehaviorMatrix(request)}
 
-Review the student submission against the assignment prompt, requirements, and advanced review criteria below. Write feedback that is specific, constructive, neutral, and appropriate for the course or grade level.
+Review the student submission against the assignment prompt and requirements. Write feedback that is specific, constructive, neutral, and appropriate for the course or grade level.
 
-Advanced review criteria:
-- Assignment alignment: explain how well the submission addresses the prompt and stated requirements.
-- Writing structure analysis: evaluate thesis/focus, organization, paragraph development, transitions, and conclusion.
-- Remediation/review areas: identify the highest-priority topics or skills the student should revisit.
-- Grammar and writing evaluation: note patterns in grammar, mechanics, clarity, tone, and word choice without over-editing the entire paper.
-- Rubric-aligned evaluation when a rubric is provided.
-- APA/MLA citation and reference check when a citation style is selected.
-- Source quality recommendations: comment on whether sources appear credible, relevant, current, and academically appropriate when source use is visible.
-- Academic integrity risk note: neutrally flag any visible concerns such as missing citations, unsupported claims, patchwriting, inconsistent voice, or overreliance on outside material. Do not accuse the student.
-- Neutral academic tone guidance: keep feedback professional, direct, and supportive.
-- First-person warning when inappropriate: if the assignment appears to require formal academic writing and the submission uses first person inappropriately, identify this as a revision issue.
+${
+  hasRubric
+    ? "Because a rubric is provided, do not add a separate advanced analysis section. Let the rubric categories drive the feedback."
+    : `Advanced review should stay limited to the Assignment Behavior Matrix for ${request.assignmentType}. Only mention citation, source quality, academic integrity, grammar, or structure when they are relevant to that assignment type and visible in the submission.`
+}
 
 ${formatInstructorVoiceGuidance()}
 
 ${formatPersonalizationGuidance()}
 
-${formatLengthGuidance("advanced")}
+${formatLengthGuidance("advanced", request)}
 
 ${formatOutputGuidance()}
 

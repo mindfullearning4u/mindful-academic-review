@@ -12,6 +12,8 @@ type AssignmentType =
   | "Reflection Paper"
   | "Peer Response"
   | "Final Project"
+  | "Final Paper"
+  | "Graduate-Level / Thesis / Dissertation"
   | "Quiz Response"
   | "Short Answer";
 
@@ -51,6 +53,8 @@ const ASSIGNMENT_TYPES: AssignmentType[] = [
   "Reflection Paper",
   "Peer Response",
   "Final Project",
+  "Final Paper",
+  "Graduate-Level / Thesis / Dissertation",
   "Quiz Response",
   "Short Answer",
 ];

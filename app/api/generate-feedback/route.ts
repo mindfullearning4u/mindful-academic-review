@@ -54,6 +54,8 @@ function isAssignmentType(value: unknown): value is AssignmentType {
     value === "Reflection Paper" ||
     value === "Peer Response" ||
     value === "Final Project" ||
+    value === "Final Paper" ||
+    value === "Graduate-Level / Thesis / Dissertation" ||
     value === "Quiz Response" ||
     value === "Short Answer"
   );
