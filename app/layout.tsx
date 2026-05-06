@@ -16,7 +16,7 @@ export const metadata = {
   title: "Mindful Academic Review",
   description: "Academic Review Workspace for Teachers and Instructors",
 };
-};
+
 
 export default function RootLayout({
   children,
