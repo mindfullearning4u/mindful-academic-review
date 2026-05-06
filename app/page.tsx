@@ -216,6 +216,7 @@ export default function Home() {
   const [citationStyle, setCitationStyle] = useState<CitationStyle>("APA");
   const [feedbackFocus, setFeedbackFocus] = useState<FeedbackFocus[]>([]);
   const [profileName, setProfileName] = useState("");
+  const [templateHelpOpen, setTemplateHelpOpen] = useState(false);
   const [profiles, setProfiles] =
     useState<AssignmentProfile[]>(getSavedProfiles);
   const [output, setOutput] = useState(PLACEHOLDER_OUTPUT);
@@ -431,7 +432,7 @@ export default function Home() {
         </header>
 
         <section className="mt-10 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_590px]">
-          <aside className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
+          <aside className="min-w-0 rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">
               Saved Assignment Templates
             </h2>
@@ -463,20 +464,37 @@ export default function Home() {
                 </select>
               </label>
 
-              <div className="rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-4 text-xs leading-5 text-[#5f665e]">
-                <p className="font-semibold text-[#27322f]">
-                  To create a template:
-                </p>
-                <ol className="mt-2 list-decimal space-y-1 pl-4">
-                  <li>
-                    First complete the assignment setup fields in the main form:
-                    Instructor Name, Course / Grade Level, Assignment Type,
-                    Assignment Prompt, Assignment Requirements, Rubric if
-                    applicable, Citation Style, and Feedback Focus.
-                  </li>
-                  <li>Then enter an Assignment/Profile Name here.</li>
-                  <li>Click Save Assignment Template.</li>
-                </ol>
+              <div className="min-w-0 overflow-hidden rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed]">
+                <button
+                  aria-controls="template-help-panel"
+                  aria-expanded={templateHelpOpen}
+                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-[#27322f] transition duration-200 hover:bg-[#f3ecdf]"
+                  onClick={() => setTemplateHelpOpen((isOpen) => !isOpen)}
+                  type="button"
+                >
+                  How to Create a Template
+                  <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-[#75684f]">
+                    {templateHelpOpen ? "Hide" : "Show"}
+                  </span>
+                </button>
+
+                {templateHelpOpen ? (
+                  <div
+                    className="min-w-0 break-words border-t border-[#e4dacb]/80 px-4 pb-4 pt-3 text-xs leading-5 text-[#5f665e]"
+                    id="template-help-panel"
+                  >
+                    <ol className="list-decimal space-y-1.5 pl-4">
+                      <li>
+                        Complete the assignment setup fields in the main form:
+                        Instructor Name, Course / Grade Level, Assignment Type,
+                        Assignment Prompt, Assignment Requirements, Rubric if
+                        applicable, Citation Style, and Feedback Focus.
+                      </li>
+                      <li>Enter an Assignment/Profile Name here.</li>
+                      <li>Click Save Assignment Template.</li>
+                    </ol>
+                  </div>
+                ) : null}
               </div>
 
               <label className="grid gap-2 text-sm font-medium text-[#394541]">
