@@ -35,6 +35,8 @@ type AssignmentProfile = {
   rubric: string;
   citationStyle: CitationStyle;
   assignmentType: AssignmentType;
+  feedbackFocus: FeedbackFocus[];
+  instructorName: string;
   mode: Mode;
 };
 
@@ -45,6 +47,8 @@ type AssignmentTemplate = {
   rubric: string;
   citationStyle: CitationStyle;
   assignmentType: AssignmentType;
+  feedbackFocus: FeedbackFocus[];
+  instructorName: string;
   mode: Mode;
 };
 
@@ -102,6 +106,16 @@ function normalizeAssignmentType(value: unknown): AssignmentType {
     : "Essay";
 }
 
+function normalizeFeedbackFocus(value: unknown): FeedbackFocus[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((focus): focus is FeedbackFocus =>
+    FEEDBACK_FOCUS_OPTIONS.includes(focus as FeedbackFocus),
+  );
+}
+
 function getSavedProfiles(): AssignmentProfile[] {
   if (typeof window === "undefined") {
     return [];
@@ -130,6 +144,8 @@ function getSavedProfiles(): AssignmentProfile[] {
         rubric: profile.rubric ?? "",
         citationStyle: profile.citationStyle ?? "APA",
         assignmentType: normalizeAssignmentType(profile.assignmentType),
+        feedbackFocus: normalizeFeedbackFocus(profile.feedbackFocus),
+        instructorName: profile.instructorName ?? "",
         mode: profile.mode ?? "basic",
       }));
   } catch {
@@ -148,6 +164,8 @@ function buildCourseAssignmentLibrary(
       rubric: profile.rubric,
       citationStyle: profile.citationStyle,
       assignmentType: profile.assignmentType,
+      feedbackFocus: profile.feedbackFocus,
+      instructorName: profile.instructorName,
       mode: profile.mode,
     };
     const existingCourse = library.find(
@@ -178,6 +196,8 @@ function toAssignmentProfile(
     rubric: assignment.rubric,
     citationStyle: assignment.citationStyle,
     assignmentType: assignment.assignmentType,
+    feedbackFocus: assignment.feedbackFocus,
+    instructorName: assignment.instructorName,
     mode: assignment.mode,
   };
 }
@@ -230,6 +250,8 @@ export default function Home() {
       rubric,
       citationStyle,
       assignmentType,
+      feedbackFocus,
+      instructorName,
       mode,
     };
 
@@ -256,7 +278,26 @@ export default function Home() {
     setRubric(profile.rubric);
     setCitationStyle(profile.citationStyle);
     setAssignmentType(profile.assignmentType);
+    setFeedbackFocus(profile.feedbackFocus);
+    setInstructorName(profile.instructorName);
     setMode(profile.mode);
+  }
+
+  function loadProfileByKey(profileKey: string) {
+    if (!profileKey) {
+      return;
+    }
+
+    const [profileCourseLevel, profileNameValue] = profileKey.split("|||");
+    const profile = profiles.find(
+      (savedProfile) =>
+        savedProfile.courseLevel === profileCourseLevel &&
+        savedProfile.name === profileNameValue,
+    );
+
+    if (profile) {
+      loadProfile(profile);
+    }
   }
 
   function clearStudentOnly() {
@@ -392,10 +433,36 @@ export default function Home() {
         <section className="mt-10 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_590px]">
           <aside className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">
-              Saved Courses & Assignments
+              Saved Assignment Templates
             </h2>
 
             <div className="mt-5 grid gap-4">
+              <label className="grid gap-2 text-sm font-medium text-[#394541]">
+                Load Saved Template
+                <select
+                  className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                  onChange={(event) => loadProfileByKey(event.target.value)}
+                  value=""
+                >
+                  <option value="">Choose a template</option>
+                  {courseAssignmentLibrary.map((course) => (
+                    <optgroup
+                      key={course.courseLevel}
+                      label={course.courseLevel}
+                    >
+                      {course.assignments.map((assignment) => (
+                        <option
+                          key={`${course.courseLevel}-${assignment.name}`}
+                          value={`${course.courseLevel}|||${assignment.name}`}
+                        >
+                          {assignment.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </label>
+
               <label className="grid gap-2 text-sm font-medium text-[#394541]">
                 Assignment/Profile Name
                 <input
@@ -413,7 +480,7 @@ export default function Home() {
                 Save Assignment Template
               </button>
               <p className="text-xs leading-5 text-[#75684f]">
-                Saves prompt, requirements, rubric, and course setup.
+                Saves course, prompt, rubric, review mode, citation style, and feedback focus.
               </p>
             </div>
 
