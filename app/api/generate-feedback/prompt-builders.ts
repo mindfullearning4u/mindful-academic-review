@@ -267,9 +267,18 @@ function formatServiceTierGuidance(request: FeedbackRequest) {
 Graduate / Research Tier:
 - Apply graduate-level academic expectations only when they are relevant to the assignment prompt, requirements, rubric, or student submission.
 - Support thesis, dissertation, research paper, literature review, methodology, and advanced scholarly writing expectations.
-- When appropriate, look for scholarly rigor, depth of analysis, literature integration, methodology awareness, academic tone, evidence quality, and argument development.
+- When appropriate, evaluate scholarly depth, quality of argument, synthesis of literature, credible scholarly source use, APA precision, research alignment, methodology awareness, clarity of academic reasoning, connection between evidence and claims, originality of thought, and graduate-level analytical depth.
+- For thesis, dissertation, literature review, or research-methods work, look for alignment among the research purpose, argument or question, source base, methodology, evidence, and claims.
+- If the submission is weak or underdeveloped, clearly name the main graduate-level issue, such as literature support, methodology, argument depth, synthesis, APA, organization, evidence quality, or academic reasoning.
+- If the submission mainly summarizes or lists ideas, say that it needs stronger graduate-level analysis, synthesis, and connection between evidence and claims.
+- If the submission is strong, acknowledge the specific scholarly strength without generic praise and identify one focused area for continued refinement when useful.
+- Encourage the student to contact the instructor for additional guidance when graduate-level analysis, research design, source integration, APA precision, or argument development needs significant work.
 - Do not override rubric categories, selected focus categories, assignment-type behavior, or existing length limits.
+- Preserve rubric override behavior and Feedback Focus behavior exactly.
 - Do not expand into a giant report. Keep the same concise, instructor-written LMS feedback style.
+- Do not over-explain every issue, rewrite the student's work, provide dissertation-length feedback, or sound robotic or overly formal.
+- Keep the tone professional, direct, respectful, scholarly, instructor-written, and concise.
+- Usually stay within 100-200 words maximum for Graduate / Research feedback. Write shorter feedback when the issue is simple, and go longer only when thesis or dissertation-level work truly requires it.
 - Mention graduate-level concerns only when they are visible and useful for the student's next best revision step.`.trim();
 }
 
