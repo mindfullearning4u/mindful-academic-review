@@ -28,6 +28,7 @@ type AssignmentType =
   | "Short Answer";
 
 type AssignmentProfile = {
+  id: string;
   name: string;
   courseLevel: string;
   assignmentPrompt: string;
@@ -41,6 +42,7 @@ type AssignmentProfile = {
 };
 
 type AssignmentTemplate = {
+  id: string;
   name: string;
   prompt: string;
   requirements: string;
@@ -116,6 +118,26 @@ function normalizeFeedbackFocus(value: unknown): FeedbackFocus[] {
   );
 }
 
+function createProfileId() {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.crypto?.randomUUID === "function"
+  ) {
+    return window.crypto.randomUUID();
+  }
+
+  return `template-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function createLegacyProfileId(
+  profile: Partial<AssignmentProfile>,
+  index: number,
+) {
+  return `legacy-${index}-${profile.courseLevel ?? "course"}-${
+    profile.name ?? "assignment"
+  }`;
+}
+
 function getSavedProfiles(): AssignmentProfile[] {
   if (typeof window === "undefined") {
     return [];
@@ -136,7 +158,8 @@ function getSavedProfiles(): AssignmentProfile[] {
 
     return parsed
       .filter((profile) => profile.name && profile.courseLevel)
-      .map((profile) => ({
+      .map((profile, index) => ({
+        id: profile.id ?? createLegacyProfileId(profile, index),
         name: profile.name ?? "",
         courseLevel: profile.courseLevel ?? "",
         assignmentPrompt: profile.assignmentPrompt ?? "",
@@ -158,6 +181,7 @@ function buildCourseAssignmentLibrary(
 ): CourseAssignmentLibrary[] {
   return profiles.reduce<CourseAssignmentLibrary[]>((library, profile) => {
     const assignment: AssignmentTemplate = {
+      id: profile.id,
       name: profile.name,
       prompt: profile.assignmentPrompt,
       requirements: profile.assignmentRequirements,
@@ -189,6 +213,7 @@ function toAssignmentProfile(
   assignment: AssignmentTemplate,
 ): AssignmentProfile {
   return {
+    id: assignment.id,
     name: assignment.name,
     courseLevel,
     assignmentPrompt: assignment.prompt,
@@ -216,6 +241,8 @@ export default function Home() {
   const [citationStyle, setCitationStyle] = useState<CitationStyle>("APA");
   const [feedbackFocus, setFeedbackFocus] = useState<FeedbackFocus[]>([]);
   const [profileName, setProfileName] = useState("");
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+  const [loadedProfileId, setLoadedProfileId] = useState<string | null>(null);
   const [templateHelpOpen, setTemplateHelpOpen] = useState(false);
   const [profiles, setProfiles] =
     useState<AssignmentProfile[]>(getSavedProfiles);
@@ -232,6 +259,22 @@ export default function Home() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfiles));
   }
 
+  function buildProfileFromForm(id: string, name: string, course: string) {
+    return {
+      id,
+      name,
+      courseLevel: course,
+      assignmentPrompt,
+      assignmentRequirements,
+      rubric,
+      citationStyle,
+      assignmentType,
+      feedbackFocus,
+      instructorName,
+      mode,
+    };
+  }
+
   function saveCurrentProfile() {
     const trimmedName = profileName.trim();
     const trimmedCourseLevel = courseLevel.trim();
@@ -243,22 +286,24 @@ export default function Home() {
       return;
     }
 
-    const nextProfile: AssignmentProfile = {
-      name: trimmedName,
-      courseLevel: trimmedCourseLevel,
-      assignmentPrompt,
-      assignmentRequirements,
-      rubric,
-      citationStyle,
-      assignmentType,
-      feedbackFocus,
-      instructorName,
-      mode,
-    };
+    const existingProfileWithSameName = profiles.find(
+      (profile) =>
+        profile.name === trimmedName &&
+        profile.courseLevel === trimmedCourseLevel,
+    );
+    const profileId =
+      editingProfileId ?? existingProfileWithSameName?.id ?? createProfileId();
+    const nextProfile: AssignmentProfile = buildProfileFromForm(
+      profileId,
+      trimmedName,
+      trimmedCourseLevel,
+    );
 
     const remainingProfiles = profiles.filter(
       (profile) =>
+        profile.id !== profileId &&
         !(
+          !editingProfileId &&
           profile.name === trimmedName &&
           profile.courseLevel === trimmedCourseLevel
         ),
@@ -270,6 +315,8 @@ export default function Home() {
     });
 
     persistProfiles(nextProfiles);
+    setEditingProfileId(null);
+    setLoadedProfileId(nextProfile.id);
   }
 
   function loadProfile(profile: AssignmentProfile) {
@@ -282,6 +329,29 @@ export default function Home() {
     setFeedbackFocus(profile.feedbackFocus);
     setInstructorName(profile.instructorName);
     setMode(profile.mode);
+    setLoadedProfileId(profile.id);
+  }
+
+  function editProfile(profile: AssignmentProfile) {
+    loadProfile(profile);
+    setProfileName(profile.name);
+    setEditingProfileId(profile.id);
+  }
+
+  function cancelEdit() {
+    setEditingProfileId(null);
+  }
+
+  function deleteProfile(profileId: string) {
+    persistProfiles(profiles.filter((profile) => profile.id !== profileId));
+
+    if (editingProfileId === profileId) {
+      setEditingProfileId(null);
+    }
+
+    if (loadedProfileId === profileId) {
+      setLoadedProfileId(null);
+    }
   }
 
   function loadProfileByKey(profileKey: string) {
@@ -289,12 +359,7 @@ export default function Home() {
       return;
     }
 
-    const [profileCourseLevel, profileNameValue] = profileKey.split("|||");
-    const profile = profiles.find(
-      (savedProfile) =>
-        savedProfile.courseLevel === profileCourseLevel &&
-        savedProfile.name === profileNameValue,
-    );
+    const profile = profiles.find((savedProfile) => savedProfile.id === profileKey);
 
     if (profile) {
       loadProfile(profile);
@@ -322,6 +387,8 @@ export default function Home() {
     setRubric("");
     setCitationStyle("APA");
     setFeedbackFocus([]);
+    setEditingProfileId(null);
+    setLoadedProfileId(null);
     setOutput(PLACEHOLDER_OUTPUT);
   }
 
@@ -453,8 +520,8 @@ export default function Home() {
                     >
                       {course.assignments.map((assignment) => (
                         <option
-                          key={`${course.courseLevel}-${assignment.name}`}
-                          value={`${course.courseLevel}|||${assignment.name}`}
+                          key={assignment.id}
+                          value={assignment.id}
                         >
                           {assignment.name}
                         </option>
@@ -513,8 +580,19 @@ export default function Home() {
                 onClick={saveCurrentProfile}
                 type="button"
               >
-                Save Assignment Template
+                {editingProfileId
+                  ? "Update Assignment Template"
+                  : "Save Assignment Template"}
               </button>
+              {editingProfileId ? (
+                <button
+                  className="justify-self-center text-xs font-semibold text-[#75684f] underline-offset-4 transition duration-200 hover:text-[#23413d] hover:underline"
+                  onClick={cancelEdit}
+                  type="button"
+                >
+                  Cancel Edit
+                </button>
+              ) : null}
               <p className="break-words text-xs leading-5 text-[#75684f]">
                 Saves course, prompt, rubric, review mode, citation style, and
                 feedback focus.
@@ -534,26 +612,57 @@ export default function Home() {
                     </h3>
                     <div className="mt-2 grid gap-1">
                       {course.assignments.map((assignment) => (
-                        <button
-                          className="w-full min-w-0 rounded-xl px-3 py-2 text-left transition duration-200 hover:bg-[#f3ecdf]"
-                          key={`${course.courseLevel}-${assignment.name}`}
-                          onClick={() =>
-                            loadProfile(
-                              toAssignmentProfile(
-                                course.courseLevel,
-                                assignment,
-                              ),
-                            )
-                          }
-                          type="button"
+                        <div
+                          className={`grid min-w-0 gap-2 rounded-xl px-3 py-2 transition duration-200 hover:bg-[#f3ecdf] ${
+                            editingProfileId === assignment.id
+                              ? "bg-[#f3ecdf]"
+                              : ""
+                          }`}
+                          key={assignment.id}
                         >
-                          <span className="block break-words text-xs font-medium uppercase tracking-[0.08em] text-[#8a7d66]">
-                            {course.courseLevel}
-                          </span>
-                          <span className="mt-0.5 block break-words text-sm font-semibold leading-5 text-[#2f3a36]">
-                            {assignment.name}
-                          </span>
-                        </button>
+                          <button
+                            className="w-full min-w-0 text-left"
+                            onClick={() =>
+                              loadProfile(
+                                toAssignmentProfile(
+                                  course.courseLevel,
+                                  assignment,
+                                ),
+                              )
+                            }
+                            type="button"
+                          >
+                            <span className="block break-words text-xs font-medium uppercase tracking-[0.08em] text-[#8a7d66]">
+                              {course.courseLevel}
+                            </span>
+                            <span className="mt-0.5 block break-words text-sm font-semibold leading-5 text-[#2f3a36]">
+                              {assignment.name}
+                            </span>
+                          </button>
+                          <div className="flex items-center gap-3 text-xs font-semibold">
+                            <button
+                              className="text-[#3f514c] underline-offset-4 transition duration-200 hover:text-[#23413d] hover:underline"
+                              onClick={() =>
+                                editProfile(
+                                  toAssignmentProfile(
+                                    course.courseLevel,
+                                    assignment,
+                                  ),
+                                )
+                              }
+                              type="button"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="text-[#8a5a4c] underline-offset-4 transition duration-200 hover:text-[#6f3728] hover:underline"
+                              onClick={() => deleteProfile(assignment.id)}
+                              type="button"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
