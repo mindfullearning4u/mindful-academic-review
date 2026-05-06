@@ -282,6 +282,37 @@ Graduate / Research Tier:
 - Mention graduate-level concerns only when they are visible and useful for the student's next best revision step.`.trim();
 }
 
+function formatCitationStandardsGuidance(request: FeedbackRequest) {
+  if (request.citationStyle === "None") {
+    return `
+Citation Standards:
+- Citation Style: None.
+- Do not require APA or MLA formatting.
+- If sources appear, mention source use only when it is relevant to the assignment requirements or visible in the submission.
+- Keep any source-use feedback concise and instructor-written.`.trim();
+  }
+
+  if (request.citationStyle === "APA") {
+    return `
+Citation Standards:
+- Citation Style: APA.
+- Use APA 7th edition standards only, based on Purdue OWL APA 7 guidance: https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/index.html
+- Do not use outdated APA editions or invent citation rules outside Purdue OWL guidance.
+- Evaluate APA only when citation expectations are relevant to the assignment requirements, rubric, selected focus categories, or visible source use.
+- When relevant, check in-text citations, reference page formatting, citation/reference matching, direct quote page number usage, hanging indent requirements, reference alignment consistency, author/date formatting, and DOI/URL formatting when applicable.
+- Citation feedback must remain concise and instructor-written. Do not generate a long citation report. Focus only on the most important citation issues.`.trim();
+  }
+
+  return `
+Citation Standards:
+- Citation Style: MLA.
+- Use MLA 9th edition standards only, based on Purdue OWL MLA guidance: https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/index.html
+- Do not use outdated MLA editions or invent citation rules outside Purdue OWL guidance.
+- Evaluate MLA only when citation expectations are relevant to the assignment requirements, rubric, selected focus categories, or visible source use.
+- When relevant, check in-text citations, Works Cited formatting, citation/Works Cited matching, page number usage, hanging indent requirements, author-page citation format, and Works Cited alignment consistency.
+- Citation feedback must remain concise and instructor-written. Do not generate a long citation report. Focus only on the most important citation issues.`.trim();
+}
+
 function formatGradingStandards(gradingStandards: string) {
   return `
 Grading Standards and Feedback Philosophy:
@@ -427,6 +458,8 @@ ${formatFeedbackFocusGuidance(request)}
 
 ${formatServiceTierGuidance(request)}
 
+${formatCitationStandardsGuidance(request)}
+
 Review the student submission against the assignment prompt and requirements. Write feedback that is clear, specific, constructive, and appropriate for the course or grade level.
 
 Include:
@@ -475,11 +508,6 @@ Rubric feedback rules:
 - Keep comments realistic for LMS feedback and instructor grading workflows.`
     : "No rubric was provided. Do not invent rubric criteria or scores.";
 
-  const citationInstruction =
-    request.citationStyle === "None"
-      ? "Citation Style: None. Do not require APA or MLA formatting, but note whether source use is clear and appropriate when sources appear."
-      : `Citation Style: ${request.citationStyle}. Check in-text citations and reference/works cited formatting for likely ${request.citationStyle} issues.`;
-
   return `
 You are an experienced academic reviewer helping a teacher or instructor provide structured, professional feedback.
 
@@ -492,6 +520,8 @@ ${formatAssignmentBehaviorMatrix(request)}
 ${formatFeedbackFocusGuidance(request)}
 
 ${formatServiceTierGuidance(request)}
+
+${formatCitationStandardsGuidance(request)}
 
 Review the student submission against the assignment prompt and requirements. Write feedback that is specific, constructive, neutral, and appropriate for the course or grade level.
 
@@ -512,8 +542,6 @@ ${formatLengthGuidance(request)}
 ${formatOutputGuidance()}
 
 ${rubricInstruction}
-
-${citationInstruction}
 
 Do not invent facts, grades, scores, citations, or source details that are not present in the submitted text.
 

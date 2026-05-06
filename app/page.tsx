@@ -822,6 +822,10 @@ export default function Home() {
                       <option>MLA</option>
                       <option>None</option>
                     </select>
+                    <span className="text-xs font-normal leading-5 text-[#75684f]">
+                      APA guidance follows APA 7th edition. MLA guidance follows
+                      MLA 9th edition based on Purdue OWL.
+                    </span>
                   </label>
                 </div>
 
