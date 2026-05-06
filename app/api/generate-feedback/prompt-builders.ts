@@ -1,14 +1,15 @@
 export type FeedbackMode = "basic" | "advanced";
 export type CitationStyle = "APA" | "MLA" | "None";
 export type AssignmentType =
-  | "Discussion Post"
-  | "Peer Response"
-  | "Reflection"
   | "Essay"
+  | "Discussion Post"
+  | "Case Assignment"
   | "Research Paper"
-  | "Case Study"
-  | "Final Paper/Project"
-  | "Short Response";
+  | "Reflection Paper"
+  | "Peer Response"
+  | "Final Project"
+  | "Quiz Response"
+  | "Short Answer";
 
 export type FeedbackRequest = {
   mode: FeedbackMode;
@@ -49,17 +50,19 @@ function formatAssignmentTypeGuidance(assignmentType: AssignmentType) {
       "Keep feedback concise and conversational. Emphasize whether the post answers the prompt, contributes a clear idea, uses course concepts, and invites meaningful discussion. Citation emphasis should be light unless sources are required.",
     "Peer Response":
       "Focus on engagement and contribution. Evaluate whether the response meaningfully addresses a classmate's ideas, extends the conversation, asks useful questions, and maintains respectful academic tone.",
-    Reflection:
+    "Reflection Paper":
       "Allow first-person voice when the assignment calls for personal reflection. Emphasize insight, connection to course concepts, specificity, and growth rather than formal essay structure alone.",
     Essay:
       "Evaluate thesis or main claim, organization, paragraph development, evidence, analysis, and clarity. Keep academic rigor steady without over-expanding the feedback.",
     "Research Paper":
       "Use stronger academic rigor. Evaluate organization, thesis, evidence, scholarly support, source quality, citation accuracy, and reference formatting. Give citation and research remediation more weight.",
-    "Case Study":
+    "Case Assignment":
       "Emphasize analysis and application. Evaluate how well the student applies course concepts to the case, supports decisions, considers relevant details, and explains practical implications.",
-    "Final Paper/Project":
+    "Final Project":
       "Treat this as a higher-stakes culminating assignment. Balance concise feedback with attention to synthesis, completeness, evidence, organization, polish, and final revision priorities.",
-    "Short Response":
+    "Quiz Response":
+      "Keep feedback brief and focused. Emphasize accuracy, direct response to the question, use of relevant course concepts, and one clear next study or review step.",
+    "Short Answer":
       "Keep feedback very concise. Focus on whether the response directly answers the question, uses relevant support, and shows clear understanding without expecting full essay development.",
   };
 
@@ -89,8 +92,12 @@ Output Formatting:
 - Use bullet points only where helpful.
 - Leave one blank line between major sections.
 - Preserve paragraph breaks; do not return the feedback as one run-on paragraph.
+- Do not use markdown headings.
+- Do not use large section titles.
 - Do not use ALL CAPS.
 - Do not use excessive bold formatting.
+- Do not use bold-heavy formatting.
+- Do not use excessive bullets or AI-style formatting.
 - Avoid formatting that feels aggressive, angry, emotionally harsh, cluttered, or overly stylized.
 - Use normal sentence casing and natural paragraph flow.
 - Avoid excessive structure, textbook-style evaluation sections, and AI-generated sounding organization.

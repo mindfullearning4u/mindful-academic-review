@@ -47,14 +47,15 @@ function isCitationStyle(value: unknown): value is CitationStyle {
 
 function isAssignmentType(value: unknown): value is AssignmentType {
   return (
-    value === "Discussion Post" ||
-    value === "Peer Response" ||
-    value === "Reflection" ||
     value === "Essay" ||
+    value === "Discussion Post" ||
+    value === "Case Assignment" ||
     value === "Research Paper" ||
-    value === "Case Study" ||
-    value === "Final Paper/Project" ||
-    value === "Short Response"
+    value === "Reflection Paper" ||
+    value === "Peer Response" ||
+    value === "Final Project" ||
+    value === "Quiz Response" ||
+    value === "Short Answer"
   );
 }
 

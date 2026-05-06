@@ -5,14 +5,15 @@ import { useMemo, useState } from "react";
 type Mode = "basic" | "advanced";
 type CitationStyle = "APA" | "MLA" | "None";
 type AssignmentType =
-  | "Discussion Post"
-  | "Peer Response"
-  | "Reflection"
   | "Essay"
+  | "Discussion Post"
+  | "Case Assignment"
   | "Research Paper"
-  | "Case Study"
-  | "Final Paper/Project"
-  | "Short Response";
+  | "Reflection Paper"
+  | "Peer Response"
+  | "Final Project"
+  | "Quiz Response"
+  | "Short Answer";
 
 type AssignmentProfile = {
   name: string;
@@ -21,21 +22,45 @@ type AssignmentProfile = {
   assignmentRequirements: string;
   rubric: string;
   citationStyle: CitationStyle;
+  assignmentType: AssignmentType;
   mode: Mode;
 };
 
 const STORAGE_KEY = "mindful-academic-review-profiles";
-const PLACEHOLDER_OUTPUT = "Generated feedback will appear here.";
+const PLACEHOLDER_OUTPUT = "Instructor feedback will appear here.";
 const ASSIGNMENT_TYPES: AssignmentType[] = [
-  "Discussion Post",
-  "Peer Response",
-  "Reflection",
   "Essay",
+  "Discussion Post",
+  "Case Assignment",
   "Research Paper",
-  "Case Study",
-  "Final Paper/Project",
-  "Short Response",
+  "Reflection Paper",
+  "Peer Response",
+  "Final Project",
+  "Quiz Response",
+  "Short Answer",
 ];
+
+function normalizeAssignmentType(value: unknown): AssignmentType {
+  if (value === "Case Study") {
+    return "Case Assignment";
+  }
+
+  if (value === "Reflection") {
+    return "Reflection Paper";
+  }
+
+  if (value === "Final Paper/Project") {
+    return "Final Project";
+  }
+
+  if (value === "Short Response") {
+    return "Short Answer";
+  }
+
+  return ASSIGNMENT_TYPES.includes(value as AssignmentType)
+    ? (value as AssignmentType)
+    : "Essay";
+}
 
 function getSavedProfiles(): AssignmentProfile[] {
   if (typeof window === "undefined") {
@@ -64,6 +89,7 @@ function getSavedProfiles(): AssignmentProfile[] {
         assignmentRequirements: profile.assignmentRequirements ?? "",
         rubric: profile.rubric ?? "",
         citationStyle: profile.citationStyle ?? "APA",
+        assignmentType: normalizeAssignmentType(profile.assignmentType),
         mode: profile.mode ?? "basic",
       }));
   } catch {
@@ -134,6 +160,7 @@ export default function Home() {
       assignmentRequirements,
       rubric,
       citationStyle,
+      assignmentType,
       mode,
     };
 
@@ -159,6 +186,7 @@ export default function Home() {
     setAssignmentRequirements(profile.assignmentRequirements);
     setRubric(profile.rubric);
     setCitationStyle(profile.citationStyle);
+    setAssignmentType(profile.assignmentType);
     setMode(profile.mode);
   }
 
@@ -205,7 +233,7 @@ export default function Home() {
     }
 
     setIsGenerating(true);
-    setOutput("Generating feedback...");
+    setOutput("Reviewing submission...");
 
     try {
       const response = await fetch("/api/generate-feedback", {
@@ -260,7 +288,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#f4f1ea] px-5 py-8 text-[#1f2927] sm:px-8 lg:px-10">
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[1680px]">
         <header className="border-b border-[#ded8ce] pb-8">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d9d2c4] bg-[#23413d] text-sm font-semibold tracking-[0.08em] text-[#fffefa] shadow-[0_1px_2px_rgba(32,38,35,0.12)]">
@@ -283,8 +311,8 @@ export default function Home() {
           </p>
         </header>
 
-        <section className="mt-8 grid gap-7 lg:grid-cols-[300px_minmax(0,1fr)_400px]">
-          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)] lg:sticky lg:top-8 lg:self-start">
+        <section className="mt-10 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_520px]">
+          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">
               Saved Courses & Assignments
             </h2>
@@ -304,8 +332,11 @@ export default function Home() {
                 onClick={saveCurrentProfile}
                 type="button"
               >
-                Save Current Assignment
+                Save Assignment Template
               </button>
+              <p className="text-xs leading-5 text-[#75684f]">
+                Saves prompt, requirements, rubric, and course setup.
+              </p>
             </div>
 
             <div className="mt-6 space-y-5 border-t border-[#e3ddd3] pt-5">
@@ -338,7 +369,7 @@ export default function Home() {
           </aside>
 
           <div className="space-y-6">
-            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)]">
+            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
                 Review Mode
               </h2>
@@ -360,7 +391,7 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)]">
+            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
                 Assignment Details
               </h2>
@@ -426,7 +457,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Student Submission
                   <textarea
-                    className="min-h-56 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-80 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setStudentSubmission(event.target.value)
                     }
@@ -470,10 +501,10 @@ export default function Home() {
               onClick={generateFeedback}
               type="button"
             >
-              {isGenerating ? "Generating Feedback..." : "Generate Feedback"}
+              {isGenerating ? "Reviewing submission..." : "Generate Feedback"}
             </button>
 
-            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)]">
+            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)]">
               <h2 className="text-base font-semibold text-[#1d2524]">Reset</h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
@@ -501,9 +532,14 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)] lg:sticky lg:top-8 lg:self-start">
+          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">Output</h2>
-            <div className="mt-4 min-h-[28rem] whitespace-pre-wrap rounded-xl border border-[#e3ddd3] bg-[#fbfaf7] p-5 text-sm leading-7 text-[#46524e]">
+            <div
+              aria-busy={isGenerating}
+              className={`mt-4 min-h-[28rem] whitespace-pre-wrap rounded-xl border border-[#e3ddd3] bg-[#fbfaf7] p-5 text-sm leading-7 text-[#46524e] ${
+                isGenerating ? "animate-pulse" : ""
+              }`}
+            >
               {output}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
