@@ -1,5 +1,15 @@
 export type FeedbackMode = "basic" | "advanced";
 export type CitationStyle = "APA" | "MLA" | "None";
+export type FeedbackFocus =
+  | "Answered Prompt"
+  | "APA / MLA"
+  | "Organization"
+  | "Grammar & Writing"
+  | "Critical Thinking"
+  | "Scholarly Sources"
+  | "Content Accuracy"
+  | "Concise Instructor Notes"
+  | "Rubric Alignment";
 export type AssignmentType =
   | "Essay"
   | "Discussion Post"
@@ -23,6 +33,7 @@ export type FeedbackRequest = {
   studentSubmission: string;
   rubric: string;
   citationStyle: CitationStyle;
+  feedbackFocus: FeedbackFocus[];
 };
 
 function formatAssignmentContext(request: FeedbackRequest) {
@@ -213,6 +224,30 @@ ${notes}
 Focus only on the most relevant areas for this assignment type. Do not overanalyze or overwhelm the student.`.trim();
 }
 
+function formatFeedbackFocusGuidance(request: FeedbackRequest) {
+  if (request.rubric.trim()) {
+    return `
+Feedback Focus:
+- Rubric provided: ignore selected focus categories.
+- Rubric categories override Feedback Focus.
+- Do not add unrelated feedback outside the rubric.`.trim();
+  }
+
+  if (request.feedbackFocus.length === 0) {
+    return `
+Feedback Focus:
+- No focus categories were selected.
+- Use the Assignment Behavior Matrix defaults only.`.trim();
+  }
+
+  return `
+Feedback Focus:
+Selected categories:
+- ${request.feedbackFocus.join("\n- ")}
+
+Use only the selected Feedback Focus categories. Do not evaluate areas the instructor did not select. Keep the response concise and avoid unnecessary analysis to reduce token usage.`.trim();
+}
+
 function formatGradingStandards(gradingStandards: string) {
   return `
 Grading Standards and Feedback Philosophy:
@@ -315,6 +350,8 @@ ${formatGradingStandards(gradingStandards)}
 
 ${formatAssignmentBehaviorMatrix(request)}
 
+${formatFeedbackFocusGuidance(request)}
+
 Review the student submission against the assignment prompt and requirements. Write feedback that is clear, specific, constructive, and appropriate for the course or grade level.
 
 Include:
@@ -362,6 +399,8 @@ Follow these grading standards as system-level guidance before reviewing the stu
 ${formatGradingStandards(gradingStandards)}
 
 ${formatAssignmentBehaviorMatrix(request)}
+
+${formatFeedbackFocusGuidance(request)}
 
 Review the student submission against the assignment prompt and requirements. Write feedback that is specific, constructive, neutral, and appropriate for the course or grade level.
 

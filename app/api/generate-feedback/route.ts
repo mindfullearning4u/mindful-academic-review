@@ -6,6 +6,7 @@ import {
   buildBasicPrompt,
   type AssignmentType,
   type CitationStyle,
+  type FeedbackFocus,
   type FeedbackMode,
   type FeedbackRequest,
 } from "./prompt-builders";
@@ -61,6 +62,20 @@ function isAssignmentType(value: unknown): value is AssignmentType {
   );
 }
 
+function isFeedbackFocus(value: unknown): value is FeedbackFocus {
+  return (
+    value === "Answered Prompt" ||
+    value === "APA / MLA" ||
+    value === "Organization" ||
+    value === "Grammar & Writing" ||
+    value === "Critical Thinking" ||
+    value === "Scholarly Sources" ||
+    value === "Content Accuracy" ||
+    value === "Concise Instructor Notes" ||
+    value === "Rubric Alignment"
+  );
+}
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -98,6 +113,10 @@ function parseFeedbackRequest(body: Record<string, unknown>) {
     return { error: "studentSubmission is required." };
   }
 
+  const feedbackFocus = Array.isArray(body.feedbackFocus)
+    ? body.feedbackFocus.filter(isFeedbackFocus)
+    : [];
+
   const request: FeedbackRequest = {
     mode: body.mode,
     studentName: body.studentName.trim(),
@@ -108,6 +127,7 @@ function parseFeedbackRequest(body: Record<string, unknown>) {
     studentSubmission: body.studentSubmission.trim(),
     rubric: typeof body.rubric === "string" ? body.rubric.trim() : "",
     citationStyle: body.citationStyle,
+    feedbackFocus,
   };
 
   return { request };

@@ -4,6 +4,16 @@ import { useMemo, useState } from "react";
 
 type Mode = "basic" | "advanced";
 type CitationStyle = "APA" | "MLA" | "None";
+type FeedbackFocus =
+  | "Answered Prompt"
+  | "APA / MLA"
+  | "Organization"
+  | "Grammar & Writing"
+  | "Critical Thinking"
+  | "Scholarly Sources"
+  | "Content Accuracy"
+  | "Concise Instructor Notes"
+  | "Rubric Alignment";
 type AssignmentType =
   | "Essay"
   | "Discussion Post"
@@ -45,6 +55,17 @@ type CourseAssignmentLibrary = {
 
 const STORAGE_KEY = "mindful-academic-review-profiles";
 const PLACEHOLDER_OUTPUT = "Instructor feedback will appear here.";
+const FEEDBACK_FOCUS_OPTIONS: FeedbackFocus[] = [
+  "Answered Prompt",
+  "APA / MLA",
+  "Organization",
+  "Grammar & Writing",
+  "Critical Thinking",
+  "Scholarly Sources",
+  "Content Accuracy",
+  "Concise Instructor Notes",
+  "Rubric Alignment",
+];
 const ASSIGNMENT_TYPES: AssignmentType[] = [
   "Essay",
   "Discussion Post",
@@ -172,6 +193,7 @@ export default function Home() {
   const [studentSubmission, setStudentSubmission] = useState("");
   const [rubric, setRubric] = useState("");
   const [citationStyle, setCitationStyle] = useState<CitationStyle>("APA");
+  const [feedbackFocus, setFeedbackFocus] = useState<FeedbackFocus[]>([]);
   const [profileName, setProfileName] = useState("");
   const [profiles, setProfiles] =
     useState<AssignmentProfile[]>(getSavedProfiles);
@@ -255,7 +277,16 @@ export default function Home() {
     setStudentSubmission("");
     setRubric("");
     setCitationStyle("APA");
+    setFeedbackFocus([]);
     setOutput(PLACEHOLDER_OUTPUT);
+  }
+
+  function toggleFeedbackFocus(focus: FeedbackFocus) {
+    setFeedbackFocus((selectedFocus) =>
+      selectedFocus.includes(focus)
+        ? selectedFocus.filter((item) => item !== focus)
+        : [...selectedFocus, focus],
+    );
   }
 
   async function generateFeedback() {
@@ -297,6 +328,7 @@ export default function Home() {
           studentSubmission,
           rubric,
           citationStyle,
+          feedbackFocus,
         }),
       });
       const data = (await response.json()) as {
@@ -542,6 +574,34 @@ export default function Home() {
                     </label>
                   </div>
                 ) : null}
+
+                <section className="grid gap-3 rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-5">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#27322f]">
+                      Feedback Focus
+                    </h3>
+                    <p className="mt-1 text-xs leading-5 text-[#75684f]">
+                      Select focus areas when no rubric is provided.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {FEEDBACK_FOCUS_OPTIONS.map((focus) => (
+                      <label
+                        className="flex items-center gap-2 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3 py-2 text-sm font-medium text-[#394541]"
+                        key={focus}
+                      >
+                        <input
+                          checked={feedbackFocus.includes(focus)}
+                          className="h-4 w-4 accent-[#23413d]"
+                          onChange={() => toggleFeedbackFocus(focus)}
+                          type="checkbox"
+                        />
+                        {focus}
+                      </label>
+                    ))}
+                  </div>
+                </section>
               </div>
             </section>
 
