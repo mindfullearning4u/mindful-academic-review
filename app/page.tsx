@@ -397,7 +397,7 @@ export default function Home() {
 
           <aside className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">Output</h2>
-            <div className="mt-4 min-h-80 rounded-md border border-[#d9d2c4] bg-[#fbfaf7] p-4 text-sm leading-6 text-[#56615d]">
+            <div className="mt-4 min-h-80 whitespace-pre-wrap rounded-md border border-[#d9d2c4] bg-[#fbfaf7] p-4 text-sm leading-6 text-[#56615d]">
               {output}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">

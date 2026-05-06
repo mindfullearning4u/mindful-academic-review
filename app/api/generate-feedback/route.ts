@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import {
   buildAdvancedPrompt,
   buildBasicPrompt,
@@ -24,6 +27,14 @@ type OpenAIResponse = {
 };
 
 const MODEL = "gpt-5.4-mini";
+const GRADING_STANDARDS_PATH = path.join(
+  process.cwd(),
+  "grading-standards.md",
+);
+
+async function getGradingStandards() {
+  return readFile(GRADING_STANDARDS_PATH, "utf8");
+}
 
 function isFeedbackMode(value: unknown): value is FeedbackMode {
   return value === "basic" || value === "advanced";
@@ -115,10 +126,21 @@ export async function POST(request: Request) {
     return Response.json({ error: parsed.error }, { status: 400 });
   }
 
+  let gradingStandards: string;
+
+  try {
+    gradingStandards = await getGradingStandards();
+  } catch {
+    return Response.json(
+      { error: "Unable to load grading standards." },
+      { status: 500 },
+    );
+  }
+
   const prompt =
     parsed.request.mode === "advanced"
-      ? buildAdvancedPrompt(parsed.request)
-      : buildBasicPrompt(parsed.request);
+      ? buildAdvancedPrompt(parsed.request, gradingStandards)
+      : buildBasicPrompt(parsed.request, gradingStandards);
 
   let openAIResponse: Response;
   let data: OpenAIResponse;
@@ -133,7 +155,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: MODEL,
         instructions:
-          "Generate teacher-facing academic feedback. Be specific, fair, concise, and professionally neutral.",
+          "Generate teacher-facing academic feedback. Follow the grading standards embedded before the student submission. Be specific, fair, concise, professionally neutral, encouraging, and rigorous.",
         input: prompt,
         max_output_tokens: 1800,
       }),
