@@ -4,6 +4,15 @@ import { useMemo, useState } from "react";
 
 type Mode = "basic" | "advanced";
 type CitationStyle = "APA" | "MLA" | "None";
+type AssignmentType =
+  | "Discussion Post"
+  | "Peer Response"
+  | "Reflection"
+  | "Essay"
+  | "Research Paper"
+  | "Case Study"
+  | "Final Paper/Project"
+  | "Short Response";
 
 type AssignmentProfile = {
   name: string;
@@ -16,6 +25,16 @@ type AssignmentProfile = {
 
 const STORAGE_KEY = "mindful-academic-review-profiles";
 const PLACEHOLDER_OUTPUT = "Generated feedback will appear here.";
+const ASSIGNMENT_TYPES: AssignmentType[] = [
+  "Discussion Post",
+  "Peer Response",
+  "Reflection",
+  "Essay",
+  "Research Paper",
+  "Case Study",
+  "Final Paper/Project",
+  "Short Response",
+];
 
 function getSavedProfiles() {
   if (typeof window === "undefined") {
@@ -41,6 +60,8 @@ export default function Home() {
   const [mode, setMode] = useState<Mode>("basic");
   const [studentName, setStudentName] = useState("");
   const [courseLevel, setCourseLevel] = useState("");
+  const [assignmentType, setAssignmentType] =
+    useState<AssignmentType>("Essay");
   const [assignmentPrompt, setAssignmentPrompt] = useState("");
   const [assignmentRequirements, setAssignmentRequirements] = useState("");
   const [studentSubmission, setStudentSubmission] = useState("");
@@ -147,6 +168,7 @@ export default function Home() {
           mode,
           studentName,
           courseLevel,
+          assignmentType,
           assignmentPrompt,
           assignmentRequirements,
           studentSubmission,
@@ -249,6 +271,21 @@ export default function Home() {
                       onChange={(event) => setCourseLevel(event.target.value)}
                       value={courseLevel}
                     />
+                  </label>
+
+                  <label className="grid gap-2 text-sm font-medium text-[#394541]">
+                    Assignment Type
+                    <select
+                      className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      onChange={(event) =>
+                        setAssignmentType(event.target.value as AssignmentType)
+                      }
+                      value={assignmentType}
+                    >
+                      {ASSIGNMENT_TYPES.map((type) => (
+                        <option key={type}>{type}</option>
+                      ))}
+                    </select>
                   </label>
                 </div>
 

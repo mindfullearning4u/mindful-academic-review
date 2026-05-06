@@ -1,10 +1,20 @@
 export type FeedbackMode = "basic" | "advanced";
 export type CitationStyle = "APA" | "MLA" | "None";
+export type AssignmentType =
+  | "Discussion Post"
+  | "Peer Response"
+  | "Reflection"
+  | "Essay"
+  | "Research Paper"
+  | "Case Study"
+  | "Final Paper/Project"
+  | "Short Response";
 
 export type FeedbackRequest = {
   mode: FeedbackMode;
   studentName: string;
   courseLevel: string;
+  assignmentType: AssignmentType;
   assignmentPrompt: string;
   assignmentRequirements: string;
   studentSubmission: string;
@@ -20,6 +30,9 @@ ${request.studentName}
 Course / Grade Level:
 ${request.courseLevel}
 
+Assignment Type:
+${request.assignmentType}
+
 Assignment Prompt:
 ${request.assignmentPrompt}
 
@@ -28,6 +41,33 @@ ${request.assignmentRequirements}
 
 Student Submission:
 ${request.studentSubmission}`.trim();
+}
+
+function formatAssignmentTypeGuidance(assignmentType: AssignmentType) {
+  const guidance: Record<AssignmentType, string> = {
+    "Discussion Post":
+      "Keep feedback concise and conversational. Emphasize whether the post answers the prompt, contributes a clear idea, uses course concepts, and invites meaningful discussion. Citation emphasis should be light unless sources are required.",
+    "Peer Response":
+      "Focus on engagement and contribution. Evaluate whether the response meaningfully addresses a classmate's ideas, extends the conversation, asks useful questions, and maintains respectful academic tone.",
+    Reflection:
+      "Allow first-person voice when the assignment calls for personal reflection. Emphasize insight, connection to course concepts, specificity, and growth rather than formal essay structure alone.",
+    Essay:
+      "Evaluate thesis or main claim, organization, paragraph development, evidence, analysis, and clarity. Keep academic rigor steady without over-expanding the feedback.",
+    "Research Paper":
+      "Use stronger academic rigor. Evaluate organization, thesis, evidence, scholarly support, source quality, citation accuracy, and reference formatting. Give citation and research remediation more weight.",
+    "Case Study":
+      "Emphasize analysis and application. Evaluate how well the student applies course concepts to the case, supports decisions, considers relevant details, and explains practical implications.",
+    "Final Paper/Project":
+      "Treat this as a higher-stakes culminating assignment. Balance concise feedback with attention to synthesis, completeness, evidence, organization, polish, and final revision priorities.",
+    "Short Response":
+      "Keep feedback very concise. Focus on whether the response directly answers the question, uses relevant support, and shows clear understanding without expecting full essay development.",
+  };
+
+  return `
+Assignment Type Intelligence:
+Assignment Type: ${assignmentType}
+Adjust tone, depth, feedback length, structure, academic rigor, citation emphasis, and remediation style for this assignment type.
+${guidance[assignmentType]}`.trim();
 }
 
 function formatGradingStandards(gradingStandards: string) {
@@ -122,6 +162,8 @@ Follow these grading standards as system-level guidance before reviewing the stu
 
 ${formatGradingStandards(gradingStandards)}
 
+${formatAssignmentTypeGuidance(request.assignmentType)}
+
 Review the student submission against the assignment prompt and requirements. Write feedback that is clear, specific, constructive, and appropriate for the course or grade level.
 
 Include:
@@ -166,6 +208,8 @@ You are an experienced academic reviewer helping a teacher or instructor provide
 Follow these grading standards as system-level guidance before reviewing the student submission:
 
 ${formatGradingStandards(gradingStandards)}
+
+${formatAssignmentTypeGuidance(request.assignmentType)}
 
 Review the student submission against the assignment prompt, requirements, and advanced review criteria below. Write feedback that is specific, constructive, neutral, and appropriate for the course or grade level.
 

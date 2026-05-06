@@ -4,6 +4,7 @@ import path from "node:path";
 import {
   buildAdvancedPrompt,
   buildBasicPrompt,
+  type AssignmentType,
   type CitationStyle,
   type FeedbackMode,
   type FeedbackRequest,
@@ -44,6 +45,19 @@ function isCitationStyle(value: unknown): value is CitationStyle {
   return value === "APA" || value === "MLA" || value === "None";
 }
 
+function isAssignmentType(value: unknown): value is AssignmentType {
+  return (
+    value === "Discussion Post" ||
+    value === "Peer Response" ||
+    value === "Reflection" ||
+    value === "Essay" ||
+    value === "Research Paper" ||
+    value === "Case Study" ||
+    value === "Final Paper/Project" ||
+    value === "Short Response"
+  );
+}
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -55,6 +69,10 @@ function parseFeedbackRequest(body: Record<string, unknown>) {
 
   if (!isCitationStyle(body.citationStyle)) {
     return { error: "A valid citation style is required." };
+  }
+
+  if (!isAssignmentType(body.assignmentType)) {
+    return { error: "A valid assignment type is required." };
   }
 
   if (!isNonEmptyString(body.studentName)) {
@@ -81,6 +99,7 @@ function parseFeedbackRequest(body: Record<string, unknown>) {
     mode: body.mode,
     studentName: body.studentName.trim(),
     courseLevel: body.courseLevel.trim(),
+    assignmentType: body.assignmentType,
     assignmentPrompt: body.assignmentPrompt.trim(),
     assignmentRequirements: body.assignmentRequirements.trim(),
     studentSubmission: body.studentSubmission.trim(),
