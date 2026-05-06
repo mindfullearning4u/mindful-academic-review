@@ -7,8 +7,8 @@ import {
   type AssignmentType,
   type CitationStyle,
   type FeedbackFocus,
-  type FeedbackMode,
   type FeedbackRequest,
+  type ServiceTier,
 } from "./prompt-builders";
 
 type OpenAITextContent = {
@@ -38,8 +38,12 @@ async function getGradingStandards() {
   return readFile(GRADING_STANDARDS_PATH, "utf8");
 }
 
-function isFeedbackMode(value: unknown): value is FeedbackMode {
-  return value === "basic" || value === "advanced";
+function isServiceTier(value: unknown): value is ServiceTier {
+  return (
+    value === "Basic" ||
+    value === "Premium" ||
+    value === "Graduate / Research"
+  );
 }
 
 function isCitationStyle(value: unknown): value is CitationStyle {
@@ -81,10 +85,6 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function parseFeedbackRequest(body: Record<string, unknown>) {
-  if (!isFeedbackMode(body.mode)) {
-    return { error: "A valid mode is required." };
-  }
-
   if (!isCitationStyle(body.citationStyle)) {
     return { error: "A valid citation style is required." };
   }
@@ -118,7 +118,9 @@ function parseFeedbackRequest(body: Record<string, unknown>) {
     : [];
 
   const request: FeedbackRequest = {
-    mode: body.mode,
+    serviceTier: isServiceTier(body.serviceTier)
+      ? body.serviceTier
+      : "Premium",
     instructorName:
       typeof body.instructorName === "string"
         ? body.instructorName.trim()
@@ -184,9 +186,9 @@ export async function POST(request: Request) {
   }
 
   const prompt =
-    parsed.request.mode === "advanced"
-      ? buildAdvancedPrompt(parsed.request, gradingStandards)
-      : buildBasicPrompt(parsed.request, gradingStandards);
+    parsed.request.serviceTier === "Basic"
+      ? buildBasicPrompt(parsed.request, gradingStandards)
+      : buildAdvancedPrompt(parsed.request, gradingStandards);
 
   let openAIResponse: Response;
   let data: OpenAIResponse;

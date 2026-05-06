@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-type Mode = "basic" | "advanced";
+type ServiceTier = "Basic" | "Premium" | "Graduate / Research";
 type CitationStyle = "APA" | "MLA" | "None";
 type FeedbackFocus =
   | "Answered Prompt"
@@ -30,6 +30,7 @@ type AssignmentType =
 type AssignmentProfile = {
   id: string;
   name: string;
+  serviceTier: ServiceTier;
   courseLevel: string;
   assignmentPrompt: string;
   assignmentRequirements: string;
@@ -38,12 +39,12 @@ type AssignmentProfile = {
   assignmentType: AssignmentType;
   feedbackFocus: FeedbackFocus[];
   instructorName: string;
-  mode: Mode;
 };
 
 type AssignmentTemplate = {
   id: string;
   name: string;
+  serviceTier: ServiceTier;
   prompt: string;
   requirements: string;
   rubric: string;
@@ -51,7 +52,6 @@ type AssignmentTemplate = {
   assignmentType: AssignmentType;
   feedbackFocus: FeedbackFocus[];
   instructorName: string;
-  mode: Mode;
 };
 
 type CourseAssignmentLibrary = {
@@ -61,6 +61,11 @@ type CourseAssignmentLibrary = {
 
 const STORAGE_KEY = "mindful-academic-review-profiles";
 const PLACEHOLDER_OUTPUT = "Instructor feedback will appear here.";
+const SERVICE_TIERS: ServiceTier[] = [
+  "Basic",
+  "Premium",
+  "Graduate / Research",
+];
 const FEEDBACK_FOCUS_OPTIONS: FeedbackFocus[] = [
   "Answered Prompt",
   "APA / MLA",
@@ -106,6 +111,12 @@ function normalizeAssignmentType(value: unknown): AssignmentType {
   return ASSIGNMENT_TYPES.includes(value as AssignmentType)
     ? (value as AssignmentType)
     : "Essay";
+}
+
+function normalizeServiceTier(value: unknown): ServiceTier {
+  return SERVICE_TIERS.includes(value as ServiceTier)
+    ? (value as ServiceTier)
+    : "Premium";
 }
 
 function normalizeFeedbackFocus(value: unknown): FeedbackFocus[] {
@@ -161,6 +172,7 @@ function getSavedProfiles(): AssignmentProfile[] {
       .map((profile, index) => ({
         id: profile.id ?? createLegacyProfileId(profile, index),
         name: profile.name ?? "",
+        serviceTier: normalizeServiceTier(profile.serviceTier),
         courseLevel: profile.courseLevel ?? "",
         assignmentPrompt: profile.assignmentPrompt ?? "",
         assignmentRequirements: profile.assignmentRequirements ?? "",
@@ -169,7 +181,6 @@ function getSavedProfiles(): AssignmentProfile[] {
         assignmentType: normalizeAssignmentType(profile.assignmentType),
         feedbackFocus: normalizeFeedbackFocus(profile.feedbackFocus),
         instructorName: profile.instructorName ?? "",
-        mode: profile.mode ?? "basic",
       }));
   } catch {
     return [];
@@ -183,6 +194,7 @@ function buildCourseAssignmentLibrary(
     const assignment: AssignmentTemplate = {
       id: profile.id,
       name: profile.name,
+      serviceTier: profile.serviceTier,
       prompt: profile.assignmentPrompt,
       requirements: profile.assignmentRequirements,
       rubric: profile.rubric,
@@ -190,7 +202,6 @@ function buildCourseAssignmentLibrary(
       assignmentType: profile.assignmentType,
       feedbackFocus: profile.feedbackFocus,
       instructorName: profile.instructorName,
-      mode: profile.mode,
     };
     const existingCourse = library.find(
       (course) => course.courseLevel === profile.courseLevel,
@@ -215,6 +226,7 @@ function toAssignmentProfile(
   return {
     id: assignment.id,
     name: assignment.name,
+    serviceTier: assignment.serviceTier,
     courseLevel,
     assignmentPrompt: assignment.prompt,
     assignmentRequirements: assignment.requirements,
@@ -223,12 +235,11 @@ function toAssignmentProfile(
     assignmentType: assignment.assignmentType,
     feedbackFocus: assignment.feedbackFocus,
     instructorName: assignment.instructorName,
-    mode: assignment.mode,
   };
 }
 
 export default function Home() {
-  const [mode, setMode] = useState<Mode>("basic");
+  const [serviceTier, setServiceTier] = useState<ServiceTier>("Premium");
   const [instructorName, setInstructorName] = useState("");
   const [studentName, setStudentName] = useState("");
   const [courseLevel, setCourseLevel] = useState("");
@@ -263,6 +274,7 @@ export default function Home() {
     return {
       id,
       name,
+      serviceTier,
       courseLevel: course,
       assignmentPrompt,
       assignmentRequirements,
@@ -271,7 +283,6 @@ export default function Home() {
       assignmentType,
       feedbackFocus,
       instructorName,
-      mode,
     };
   }
 
@@ -321,6 +332,7 @@ export default function Home() {
 
   function loadProfile(profile: AssignmentProfile) {
     setCourseLevel(profile.courseLevel);
+    setServiceTier(profile.serviceTier);
     setAssignmentPrompt(profile.assignmentPrompt);
     setAssignmentRequirements(profile.assignmentRequirements);
     setRubric(profile.rubric);
@@ -328,7 +340,6 @@ export default function Home() {
     setAssignmentType(profile.assignmentType);
     setFeedbackFocus(profile.feedbackFocus);
     setInstructorName(profile.instructorName);
-    setMode(profile.mode);
     setLoadedProfileId(profile.id);
   }
 
@@ -380,6 +391,7 @@ export default function Home() {
     setInstructorName("");
     setStudentName("");
     setCourseLevel("");
+    setServiceTier("Premium");
     setAssignmentType("Essay");
     setAssignmentPrompt("");
     setAssignmentRequirements("");
@@ -430,7 +442,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode,
+          serviceTier,
           instructorName,
           studentName,
           courseLevel,
@@ -555,9 +567,10 @@ export default function Home() {
                     <ol className="list-decimal space-y-1.5 pl-4">
                       <li>
                         Complete the assignment setup fields in the main form:
-                        Instructor Name, Course / Grade Level, Assignment Type,
-                        Assignment Prompt, Assignment Requirements, Rubric if
-                        applicable, Citation Style, and Feedback Focus.
+                        Instructor Name, Course / Grade Level, Service Tier,
+                        Assignment Type, Assignment Prompt, Assignment
+                        Requirements, Rubric if applicable, Citation Style, and
+                        Feedback Focus.
                       </li>
                       <li>Enter an Assignment/Profile Name here.</li>
                       <li>Click Save Assignment Template.</li>
@@ -594,7 +607,7 @@ export default function Home() {
                 </button>
               ) : null}
               <p className="break-words text-xs leading-5 text-[#75684f]">
-                Saves course, prompt, rubric, review mode, citation style, and
+                Saves course, prompt, rubric, service tier, citation style, and
                 feedback focus.
               </p>
               <p className="break-words text-xs leading-5 text-[#75684f]">
@@ -678,21 +691,24 @@ export default function Home() {
           <div className="space-y-6">
             <section className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
-                Review Mode
+                Service Tier
               </h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {(["basic", "advanced"] as Mode[]).map((modeOption) => (
+              <p className="mt-1 text-xs leading-5 text-[#75684f]">
+                Select the academic rigor level for this review.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {SERVICE_TIERS.map((tier) => (
                   <button
                     className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition duration-200 ${
-                      mode === modeOption
+                      serviceTier === tier
                         ? "border-[#23413d] bg-[#23413d] text-white shadow-[0_5px_12px_rgba(32,38,35,0.14)]"
                         : "border-[#ddd4c6] bg-[#fffdf7] text-[#394541] hover:border-[#b6a68f] hover:bg-[#f3ecdf]"
                     }`}
-                    key={modeOption}
-                    onClick={() => setMode(modeOption)}
+                    key={tier}
+                    onClick={() => setServiceTier(tier)}
                     type="button"
                   >
-                    {modeOption === "basic" ? "Basic Mode" : "Advanced Mode"}
+                    {tier}
                   </button>
                 ))}
               </div>
@@ -783,33 +799,31 @@ export default function Home() {
                   />
                 </label>
 
-                {mode === "advanced" ? (
-                  <div className="grid gap-5 rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-5">
-                    <label className="grid gap-2 text-sm font-medium text-[#394541]">
-                      Rubric
-                      <textarea
-                        className="min-h-36 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
-                        onChange={(event) => setRubric(event.target.value)}
-                        value={rubric}
-                      />
-                    </label>
+                <div className="grid gap-5 rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-5">
+                  <label className="grid gap-2 text-sm font-medium text-[#394541]">
+                    Rubric
+                    <textarea
+                      className="min-h-36 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      onChange={(event) => setRubric(event.target.value)}
+                      value={rubric}
+                    />
+                  </label>
 
-                    <label className="grid gap-2 text-sm font-medium text-[#394541] sm:max-w-xs">
-                      Citation Style
-                      <select
-                        className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
-                        onChange={(event) =>
-                          setCitationStyle(event.target.value as CitationStyle)
-                        }
-                        value={citationStyle}
-                      >
-                        <option>APA</option>
-                        <option>MLA</option>
-                        <option>None</option>
-                      </select>
-                    </label>
-                  </div>
-                ) : null}
+                  <label className="grid gap-2 text-sm font-medium text-[#394541] sm:max-w-xs">
+                    Citation Style
+                    <select
+                      className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      onChange={(event) =>
+                        setCitationStyle(event.target.value as CitationStyle)
+                      }
+                      value={citationStyle}
+                    >
+                      <option>APA</option>
+                      <option>MLA</option>
+                      <option>None</option>
+                    </select>
+                  </label>
+                </div>
 
                 <section className="grid gap-3 rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-5">
                   <div>

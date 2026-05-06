@@ -1,4 +1,4 @@
-export type FeedbackMode = "basic" | "advanced";
+export type ServiceTier = "Basic" | "Premium" | "Graduate / Research";
 export type CitationStyle = "APA" | "MLA" | "None";
 export type FeedbackFocus =
   | "Answered Prompt"
@@ -24,7 +24,7 @@ export type AssignmentType =
   | "Short Answer";
 
 export type FeedbackRequest = {
-  mode: FeedbackMode;
+  serviceTier: ServiceTier;
   instructorName: string;
   studentName: string;
   courseLevel: string;
@@ -258,6 +258,21 @@ Selected categories:
 Use only the selected Feedback Focus categories. Do not evaluate areas the instructor did not select. Keep the response concise and avoid unnecessary analysis to reduce token usage.`.trim();
 }
 
+function formatServiceTierGuidance(request: FeedbackRequest) {
+  if (request.serviceTier !== "Graduate / Research") {
+    return "";
+  }
+
+  return `
+Graduate / Research Tier:
+- Apply graduate-level academic expectations only when they are relevant to the assignment prompt, requirements, rubric, or student submission.
+- Support thesis, dissertation, research paper, literature review, methodology, and advanced scholarly writing expectations.
+- When appropriate, look for scholarly rigor, depth of analysis, literature integration, methodology awareness, academic tone, evidence quality, and argument development.
+- Do not override rubric categories, selected focus categories, assignment-type behavior, or existing length limits.
+- Do not expand into a giant report. Keep the same concise, instructor-written LMS feedback style.
+- Mention graduate-level concerns only when they are visible and useful for the student's next best revision step.`.trim();
+}
+
 function formatGradingStandards(gradingStandards: string) {
   return `
 Grading Standards and Feedback Philosophy:
@@ -401,6 +416,8 @@ ${formatAssignmentBehaviorMatrix(request)}
 
 ${formatFeedbackFocusGuidance(request)}
 
+${formatServiceTierGuidance(request)}
+
 Review the student submission against the assignment prompt and requirements. Write feedback that is clear, specific, constructive, and appropriate for the course or grade level.
 
 Include:
@@ -464,6 +481,8 @@ ${formatGradingStandards(gradingStandards)}
 ${formatAssignmentBehaviorMatrix(request)}
 
 ${formatFeedbackFocusGuidance(request)}
+
+${formatServiceTierGuidance(request)}
 
 Review the student submission against the assignment prompt and requirements. Write feedback that is specific, constructive, neutral, and appropriate for the course or grade level.
 
