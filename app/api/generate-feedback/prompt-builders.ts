@@ -300,16 +300,22 @@ function formatLengthGuidance(request: FeedbackRequest) {
   return `
 Length and Prioritization:
 - Keep feedback concise and efficient, like an instructor grading under practical time constraints.
+- Tighten feedback further whenever possible.
+- Remove unnecessary filler sentences and repetitive wording.
 - Do not write essay-length grading responses.
 - Do not exceed the target length unless the instructor explicitly requests detailed feedback.
 - Prioritize the most important strengths and weaknesses only.
+- Identify the most important strengths and deficiencies only.
 - Focus on the top 2-3 priorities for improvement.
+- Keep comments focused on the highest-impact issues only.
 - Keep feedback concise enough that students will actually read it.
 - Do not overload students with too many correction points.
 - Avoid repeating the same issue in multiple sections.
 - Keep most sections to one short paragraph or 2-4 concise bullet points.
 - Use short paragraphs and clear bullets.
 - Avoid long academic explanations unless the assignment requires detailed instructor feedback.
+- Do not over-explain every issue.
+- Do not attempt to fully reteach the assignment in the feedback.
 - Make feedback practical, readable, and motivating.
 - The goal is not to explain everything; the goal is to guide the student toward the next best revision step.
 - ${wordLimit}
@@ -331,6 +337,8 @@ Instructor Voice:
 - Use direct language such as "You did well with...", "You addressed...", "You showed...", "Continue strengthening...", "Make sure to...", and "This would be stronger if...".
 - For weak or partial submissions, use direct but supportive wording such as "Although you addressed each question, you need more in-depth analysis", "You identified the correct terms, but the response needs more explanation", "Definition alone does not show full understanding", or "Continue thinking critically and add more substance and analysis."
 - Use supportive guidance such as "Reach out if you need additional clarification or support."
+- When improvement or help is clearly needed, include one brief support line such as "Please reach out if you would like additional clarification or guidance", "Do not hesitate to contact me if you need further help developing your analysis", or "Reach out if you need additional support with APA formatting or content development."
+- Do not include a support line for every submission. Use it only when there are incomplete answers, weak analysis, missing requirements, APA problems, misunderstandings, or underdeveloped responses.
 - Keep the tone encouraging, motivating, constructive, caring, professional, academically focused, human, specific, and concise.
 - Maintain academic standards and be assertive and clear about needed improvements.
 - Guide revision and growth without sounding discouraging.
