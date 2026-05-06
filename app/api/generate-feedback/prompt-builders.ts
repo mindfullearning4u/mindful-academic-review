@@ -198,9 +198,10 @@ function formatAssignmentBehaviorMatrix(request: FeedbackRequest) {
     return `
 Assignment Behavior Matrix:
 - A rubric was provided, so rubric categories override assignment-type behavior.
-- Base feedback primarily on the rubric only.
-- Give 1-2 concise sentences per rubric category.
-- Do not add broad assignment-type analysis unless it directly supports a rubric category.`.trim();
+- Rubric categories are the primary and only evaluation structure.
+- Do not add assignment-type analysis unless a rubric category explicitly asks for it.
+- Do not evaluate categories that are not present in the rubric.
+- Do not create a score breakdown report unless the rubric explicitly requests scores.`.trim();
   }
 
   const behavior = ASSIGNMENT_BEHAVIOR_MATRIX[request.assignmentType];
@@ -230,7 +231,8 @@ function formatFeedbackFocusGuidance(request: FeedbackRequest) {
 Feedback Focus:
 - Rubric provided: ignore selected focus categories.
 - Rubric categories override Feedback Focus.
-- Do not add unrelated feedback outside the rubric.`.trim();
+- Do not add unrelated feedback outside the rubric.
+- Only discuss selected focus categories if they appear as rubric categories.`.trim();
   }
 
   if (request.feedbackFocus.length === 0) {
@@ -285,7 +287,7 @@ function formatLengthGuidance(mode: FeedbackMode, request: FeedbackRequest) {
       ? "Basic Mode: 100-175 words maximum."
       : "Advanced Mode: 175-300 words maximum unless a rubric requires more detail.";
   const rubricOverride = request.rubric.trim()
-    ? "Rubric override: keep each rubric category to 1-2 concise sentences."
+    ? "Rubric override: give each rubric category 1 concise sentence; use a maximum of 2 short sentences only when necessary."
     : `Assignment behavior target: follow the ${request.assignmentType} target length from the Assignment Behavior Matrix.`;
 
   return `
@@ -383,7 +385,19 @@ export function buildAdvancedPrompt(
     ? `Rubric:
 ${request.rubric}
 
-Use the rubric to provide a rubric-aligned evaluation. Reference rubric criteria where relevant, but do not invent point values or final grades unless the rubric explicitly provides them. Keep each rubric category to 1-2 concise sentences.`
+Use the rubric as the primary evaluation structure. Provide concise comments tied directly to rubric categories only.
+
+Rubric feedback rules:
+- Follow the rubric structure only.
+- Use subtle labels for rubric categories, such as "Content -", "APA -", or "Analysis -".
+- Give each rubric category 1 concise sentence.
+- Use a maximum of 2 short sentences only if necessary.
+- Do not add unrelated analysis.
+- Do not add generic writing commentary unless the rubric includes writing as a category.
+- Do not evaluate categories that are not present in the rubric.
+- Do not create long category explanations.
+- Do not create a score breakdown report unless explicitly requested.
+- Keep comments realistic for LMS feedback and instructor grading workflows.`
     : "No rubric was provided. Do not invent rubric criteria or scores.";
 
   const citationInstruction =
@@ -406,7 +420,7 @@ Review the student submission against the assignment prompt and requirements. Wr
 
 ${
   hasRubric
-    ? "Because a rubric is provided, do not add a separate advanced analysis section. Let the rubric categories drive the feedback."
+    ? "Because a rubric is provided, do not add a separate advanced analysis section. Let rubric categories fully control the feedback."
     : `Advanced review should stay limited to the Assignment Behavior Matrix for ${request.assignmentType}. Only mention citation, source quality, academic integrity, grammar, or structure when they are relevant to that assignment type and visible in the submission.`
 }
 
