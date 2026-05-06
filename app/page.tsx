@@ -26,6 +26,21 @@ type AssignmentProfile = {
   mode: Mode;
 };
 
+type AssignmentTemplate = {
+  name: string;
+  prompt: string;
+  requirements: string;
+  rubric: string;
+  citationStyle: CitationStyle;
+  assignmentType: AssignmentType;
+  mode: Mode;
+};
+
+type CourseAssignmentLibrary = {
+  courseLevel: string;
+  assignments: AssignmentTemplate[];
+};
+
 const STORAGE_KEY = "mindful-academic-review-profiles";
 const PLACEHOLDER_OUTPUT = "Instructor feedback will appear here.";
 const ASSIGNMENT_TYPES: AssignmentType[] = [
@@ -97,6 +112,51 @@ function getSavedProfiles(): AssignmentProfile[] {
   }
 }
 
+function buildCourseAssignmentLibrary(
+  profiles: AssignmentProfile[],
+): CourseAssignmentLibrary[] {
+  return profiles.reduce<CourseAssignmentLibrary[]>((library, profile) => {
+    const assignment: AssignmentTemplate = {
+      name: profile.name,
+      prompt: profile.assignmentPrompt,
+      requirements: profile.assignmentRequirements,
+      rubric: profile.rubric,
+      citationStyle: profile.citationStyle,
+      assignmentType: profile.assignmentType,
+      mode: profile.mode,
+    };
+    const existingCourse = library.find(
+      (course) => course.courseLevel === profile.courseLevel,
+    );
+
+    if (existingCourse) {
+      existingCourse.assignments.push(assignment);
+      return library;
+    }
+
+    return [
+      ...library,
+      { courseLevel: profile.courseLevel, assignments: [assignment] },
+    ];
+  }, []);
+}
+
+function toAssignmentProfile(
+  courseLevel: string,
+  assignment: AssignmentTemplate,
+): AssignmentProfile {
+  return {
+    name: assignment.name,
+    courseLevel,
+    assignmentPrompt: assignment.prompt,
+    assignmentRequirements: assignment.requirements,
+    rubric: assignment.rubric,
+    citationStyle: assignment.citationStyle,
+    assignmentType: assignment.assignmentType,
+    mode: assignment.mode,
+  };
+}
+
 export default function Home() {
   const [mode, setMode] = useState<Mode>("basic");
   const [studentName, setStudentName] = useState("");
@@ -114,26 +174,8 @@ export default function Home() {
   const [output, setOutput] = useState(PLACEHOLDER_OUTPUT);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const groupedProfiles = useMemo(
-    () =>
-      profiles.reduce<{ courseLevel: string; profiles: AssignmentProfile[] }[]>(
-        (groups, profile) => {
-          const existingGroup = groups.find(
-            (group) => group.courseLevel === profile.courseLevel,
-          );
-
-          if (existingGroup) {
-            existingGroup.profiles.push(profile);
-            return groups;
-          }
-
-          return [
-            ...groups,
-            { courseLevel: profile.courseLevel, profiles: [profile] },
-          ];
-        },
-        [],
-      ),
+  const courseAssignmentLibrary = useMemo(
+    () => buildCourseAssignmentLibrary(profiles),
     [profiles],
   );
 
@@ -287,23 +329,25 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea] px-5 py-8 text-[#1f2927] sm:px-8 lg:px-10">
+    <main className="min-h-screen bg-[#f2eee6] px-5 py-8 text-[#232b28] sm:px-8 lg:px-10">
       <div className="mx-auto max-w-[1680px]">
-        <header className="border-b border-[#ded8ce] pb-8">
+        <header className="border-b border-[#ddd4c6]/80 pb-9">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d9d2c4] bg-[#23413d] text-sm font-semibold tracking-[0.08em] text-[#fffefa] shadow-[0_1px_2px_rgba(32,38,35,0.12)]">
-              MAR
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc5b5] bg-[#23413d] text-[0.68rem] font-semibold tracking-[0.08em] text-[#fffaf2] shadow-[0_4px_10px_rgba(32,38,35,0.16)]">
+              <span className="absolute left-2 top-2 h-6 w-2.5 rounded-sm border border-[#d8cebd]/80 border-r-0" />
+              <span className="absolute right-2 top-2 h-6 w-2.5 rounded-sm border border-[#d8cebd]/80 border-l-0" />
+              <span className="relative mt-1">MAR</span>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#75684f]">
-                Academic Feedback Studio
+                Academic Review Workspace
               </p>
               <p className="text-lg font-semibold tracking-tight text-[#17211f]">
                 Mindful Academic Review
               </p>
             </div>
           </div>
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#17211f] sm:text-5xl">
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#17211f] sm:text-4xl">
             Mindful Academic Review
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-[#5b6661] sm:text-lg">
@@ -311,8 +355,8 @@ export default function Home() {
           </p>
         </header>
 
-        <section className="mt-10 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_520px]">
-          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)] lg:sticky lg:top-8 lg:self-start">
+        <section className="mt-10 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_590px]">
+          <aside className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">
               Saved Courses & Assignments
             </h2>
@@ -321,14 +365,14 @@ export default function Home() {
               <label className="grid gap-2 text-sm font-medium text-[#394541]">
                 Assignment/Profile Name
                 <input
-                  className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                  className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                   onChange={(event) => setProfileName(event.target.value)}
                   value={profileName}
                 />
               </label>
 
               <button
-                className="rounded-lg bg-[#23413d] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(32,38,35,0.12)] transition hover:bg-[#1c3431]"
+                className="rounded-xl bg-[#23413d] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_5px_12px_rgba(32,38,35,0.14)] transition duration-200 hover:bg-[#2d4a43]"
                 onClick={saveCurrentProfile}
                 type="button"
               >
@@ -339,22 +383,29 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="mt-6 space-y-5 border-t border-[#e3ddd3] pt-5">
-              {groupedProfiles.length > 0 ? (
-                groupedProfiles.map((group) => (
-                  <div key={group.courseLevel}>
+            <div className="mt-6 space-y-5 border-t border-[#e4dacb]/80 pt-5">
+              {courseAssignmentLibrary.length > 0 ? (
+                courseAssignmentLibrary.map((course) => (
+                  <div key={course.courseLevel}>
                     <h3 className="text-sm font-semibold text-[#27322f]">
-                      {group.courseLevel}
+                      {course.courseLevel}
                     </h3>
                     <div className="mt-2 grid gap-1.5">
-                      {group.profiles.map((profile) => (
+                      {course.assignments.map((assignment) => (
                         <button
-                          className="rounded-lg px-3 py-2 text-left text-sm leading-5 text-[#5b6661] transition hover:bg-[#f4f1ea] hover:text-[#1d2524]"
-                          key={`${profile.courseLevel}-${profile.name}`}
-                          onClick={() => loadProfile(profile)}
+                          className="rounded-xl px-3 py-2 text-left text-sm leading-5 text-[#5b6661] transition duration-200 hover:bg-[#f3ecdf] hover:text-[#1d2524]"
+                          key={`${course.courseLevel}-${assignment.name}`}
+                          onClick={() =>
+                            loadProfile(
+                              toAssignmentProfile(
+                                course.courseLevel,
+                                assignment,
+                              ),
+                            )
+                          }
                           type="button"
                         >
-                          {profile.name}
+                          {assignment.name}
                         </button>
                       ))}
                     </div>
@@ -369,17 +420,17 @@ export default function Home() {
           </aside>
 
           <div className="space-y-6">
-            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)]">
+            <section className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
                 Review Mode
               </h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {(["basic", "advanced"] as Mode[]).map((modeOption) => (
                   <button
-                    className={`rounded-lg border px-4 py-3 text-left text-sm font-semibold transition ${
+                    className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition duration-200 ${
                       mode === modeOption
-                        ? "border-[#23413d] bg-[#23413d] text-white shadow-[0_1px_2px_rgba(32,38,35,0.12)]"
-                        : "border-[#ded8ce] bg-[#fbfaf7] text-[#394541] hover:border-[#9b8a72] hover:bg-[#f7f3ea]"
+                        ? "border-[#23413d] bg-[#23413d] text-white shadow-[0_5px_12px_rgba(32,38,35,0.14)]"
+                        : "border-[#ddd4c6] bg-[#fffdf7] text-[#394541] hover:border-[#b6a68f] hover:bg-[#f3ecdf]"
                     }`}
                     key={modeOption}
                     onClick={() => setMode(modeOption)}
@@ -391,17 +442,17 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)]">
+            <section className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
                 Assignment Details
               </h2>
 
-              <div className="mt-5 grid gap-5">
+              <div className="mt-6 grid gap-5">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Student Name
                     <input
-                      className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                       onChange={(event) => setStudentName(event.target.value)}
                       value={studentName}
                     />
@@ -410,7 +461,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Course / Grade Level
                     <input
-                      className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                       onChange={(event) => setCourseLevel(event.target.value)}
                       value={courseLevel}
                     />
@@ -419,7 +470,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Assignment Type
                     <select
-                      className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                       onChange={(event) =>
                         setAssignmentType(event.target.value as AssignmentType)
                       }
@@ -435,7 +486,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Assignment Prompt
                   <textarea
-                    className="min-h-28 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-28 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setAssignmentPrompt(event.target.value)
                     }
@@ -446,7 +497,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Assignment Requirements / Instructions
                   <textarea
-                    className="min-h-32 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-32 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setAssignmentRequirements(event.target.value)
                     }
@@ -457,7 +508,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Student Submission
                   <textarea
-                    className="min-h-80 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-80 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setStudentSubmission(event.target.value)
                     }
@@ -466,11 +517,11 @@ export default function Home() {
                 </label>
 
                 {mode === "advanced" ? (
-                  <div className="grid gap-5 rounded-xl border border-[#e3ddd3] bg-[#fbfaf7] p-5">
+                  <div className="grid gap-5 rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-5">
                     <label className="grid gap-2 text-sm font-medium text-[#394541]">
                       Rubric
                       <textarea
-                        className="min-h-36 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                        className="min-h-36 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                         onChange={(event) => setRubric(event.target.value)}
                         value={rubric}
                       />
@@ -479,7 +530,7 @@ export default function Home() {
                     <label className="grid gap-2 text-sm font-medium text-[#394541] sm:max-w-xs">
                       Citation Style
                       <select
-                        className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                        className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                         onChange={(event) =>
                           setCitationStyle(event.target.value as CitationStyle)
                         }
@@ -496,7 +547,7 @@ export default function Home() {
             </section>
 
             <button
-              className="w-full rounded-lg bg-[#17211f] px-5 py-3.5 text-base font-semibold text-white shadow-[0_2px_5px_rgba(32,38,35,0.14)] transition hover:bg-[#23413d] disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full rounded-xl bg-[#17211f] px-5 py-3.5 text-base font-semibold text-white shadow-[0_8px_18px_rgba(32,38,35,0.16)] transition duration-200 hover:bg-[#2d4a43] disabled:cursor-not-allowed disabled:opacity-70"
               disabled={isGenerating}
               onClick={generateFeedback}
               type="button"
@@ -504,25 +555,25 @@ export default function Home() {
               {isGenerating ? "Reviewing submission..." : "Generate Feedback"}
             </button>
 
-            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)]">
+            <section className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)]">
               <h2 className="text-base font-semibold text-[#1d2524]">Reset</h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
-                  className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
+                  className="rounded-xl border border-[#cfc5b5] bg-[#fffdf7] px-4 py-2.5 text-sm font-semibold text-[#394541] transition duration-200 hover:border-[#a99578] hover:bg-[#f3ecdf]"
                   onClick={clearStudentOnly}
                   type="button"
                 >
                   Clear Student Only
                 </button>
                 <button
-                  className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
+                  className="rounded-xl border border-[#cfc5b5] bg-[#fffdf7] px-4 py-2.5 text-sm font-semibold text-[#394541] transition duration-200 hover:border-[#a99578] hover:bg-[#f3ecdf]"
                   onClick={clearOutputOnly}
                   type="button"
                 >
                   Clear Output Only
                 </button>
                 <button
-                  className="rounded-lg border border-[#d0b7ae] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#7a3327] transition hover:border-[#7a3327] hover:bg-[#fbf3f0]"
+                  className="rounded-xl border border-[#d2bbb1] bg-[#fffdf7] px-4 py-2.5 text-sm font-semibold text-[#7a3327] transition duration-200 hover:border-[#9a4b3f] hover:bg-[#fbf0eb]"
                   onClick={clearAll}
                   type="button"
                 >
@@ -532,11 +583,11 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_4px_14px_rgba(32,38,35,0.055)] lg:sticky lg:top-8 lg:self-start">
+          <aside className="rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">Output</h2>
             <div
               aria-busy={isGenerating}
-              className={`mt-4 min-h-[28rem] whitespace-pre-wrap rounded-xl border border-[#e3ddd3] bg-[#fbfaf7] p-5 text-sm leading-7 text-[#46524e] ${
+              className={`mt-4 min-h-[30rem] whitespace-pre-wrap rounded-2xl border border-[#e7ddce]/70 bg-[#fff8ee] px-7 py-6 text-[0.95rem] leading-8 text-[#3f4b47] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] ${
                 isGenerating ? "animate-pulse" : ""
               }`}
             >
@@ -544,14 +595,14 @@ export default function Home() {
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <button
-                className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
+                className="rounded-xl border border-[#cfc5b5] bg-[#fffdf7] px-4 py-2.5 text-sm font-semibold text-[#394541] transition duration-200 hover:border-[#a99578] hover:bg-[#f3ecdf]"
                 onClick={copyOutput}
                 type="button"
               >
                 Copy Output
               </button>
               <button
-                className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
+                className="rounded-xl border border-[#cfc5b5] bg-[#fffdf7] px-4 py-2.5 text-sm font-semibold text-[#394541] transition duration-200 hover:border-[#a99578] hover:bg-[#f3ecdf]"
                 onClick={downloadOutput}
                 type="button"
               >
