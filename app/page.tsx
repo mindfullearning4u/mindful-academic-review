@@ -436,7 +436,7 @@ export default function Home() {
               Saved Assignment Templates
             </h2>
 
-            <div className="mt-5 grid gap-4">
+            <div className="mt-5 grid gap-5">
               <label className="grid gap-2 text-sm font-medium text-[#394541]">
                 Load Saved Template
                 <select
@@ -463,6 +463,22 @@ export default function Home() {
                 </select>
               </label>
 
+              <div className="rounded-2xl border border-[#e4dacb]/80 bg-[#fbf6ed] p-4 text-xs leading-5 text-[#5f665e]">
+                <p className="font-semibold text-[#27322f]">
+                  To create a template:
+                </p>
+                <ol className="mt-2 list-decimal space-y-1 pl-4">
+                  <li>
+                    First complete the assignment setup fields in the main form:
+                    Instructor Name, Course / Grade Level, Assignment Type,
+                    Assignment Prompt, Assignment Requirements, Rubric if
+                    applicable, Citation Style, and Feedback Focus.
+                  </li>
+                  <li>Then enter an Assignment/Profile Name here.</li>
+                  <li>Click Save Assignment Template.</li>
+                </ol>
+              </div>
+
               <label className="grid gap-2 text-sm font-medium text-[#394541]">
                 Assignment/Profile Name
                 <input
@@ -482,19 +498,23 @@ export default function Home() {
               <p className="text-xs leading-5 text-[#75684f]">
                 Saves course, prompt, rubric, review mode, citation style, and feedback focus.
               </p>
+              <p className="text-xs leading-5 text-[#75684f]">
+                Templates save assignment setup only. Student name, student
+                submission, and output are not saved.
+              </p>
             </div>
 
-            <div className="mt-6 space-y-5 border-t border-[#e4dacb]/80 pt-5">
+            <div className="mt-7 space-y-4 border-t border-[#e4dacb]/80 pt-5">
               {courseAssignmentLibrary.length > 0 ? (
                 courseAssignmentLibrary.map((course) => (
                   <div key={course.courseLevel}>
-                    <h3 className="text-sm font-semibold text-[#27322f]">
+                    <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-[#75684f]">
                       {course.courseLevel}
                     </h3>
-                    <div className="mt-2 grid gap-1.5">
+                    <div className="mt-2 grid gap-1">
                       {course.assignments.map((assignment) => (
                         <button
-                          className="rounded-xl px-3 py-2 text-left text-sm leading-5 text-[#5b6661] transition duration-200 hover:bg-[#f3ecdf] hover:text-[#1d2524]"
+                          className="rounded-xl px-3 py-2 text-left transition duration-200 hover:bg-[#f3ecdf]"
                           key={`${course.courseLevel}-${assignment.name}`}
                           onClick={() =>
                             loadProfile(
@@ -506,7 +526,12 @@ export default function Home() {
                           }
                           type="button"
                         >
-                          {assignment.name}
+                          <span className="block text-xs font-medium uppercase tracking-[0.08em] text-[#8a7d66]">
+                            {course.courseLevel}
+                          </span>
+                          <span className="mt-0.5 block text-sm font-semibold leading-5 text-[#2f3a36]">
+                            {assignment.name}
+                          </span>
                         </button>
                       ))}
                     </div>
