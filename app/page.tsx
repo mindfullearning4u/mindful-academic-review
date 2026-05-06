@@ -262,10 +262,20 @@ export default function Home() {
     <main className="min-h-screen bg-[#f4f1ea] px-5 py-8 text-[#1f2927] sm:px-8 lg:px-10">
       <div className="mx-auto max-w-[1500px]">
         <header className="border-b border-[#ded8ce] pb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#75684f]">
-            Mindful Academic Review
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-[#17211f] sm:text-5xl">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d9d2c4] bg-[#23413d] text-sm font-semibold tracking-[0.08em] text-[#fffefa] shadow-[0_1px_2px_rgba(32,38,35,0.12)]">
+              MAR
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#75684f]">
+                Academic Feedback Studio
+              </p>
+              <p className="text-lg font-semibold tracking-tight text-[#17211f]">
+                Mindful Academic Review
+              </p>
+            </div>
+          </div>
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#17211f] sm:text-5xl">
             Mindful Academic Review
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-[#5b6661] sm:text-lg">
