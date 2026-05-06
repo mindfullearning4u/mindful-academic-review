@@ -432,16 +432,16 @@ export default function Home() {
         </header>
 
         <section className="mt-10 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_590px]">
-          <aside className="min-w-0 rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
+          <aside className="min-w-0 overflow-hidden rounded-2xl border border-[#ddd4c6]/80 bg-[#fffaf2] p-6 shadow-[0_10px_28px_rgba(43,38,30,0.08)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">
               Saved Assignment Templates
             </h2>
 
-            <div className="mt-5 grid gap-5">
-              <label className="grid gap-2 text-sm font-medium text-[#394541]">
+            <div className="mt-5 grid min-w-0 gap-5">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-[#394541]">
                 Load Saved Template
                 <select
-                  className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                  className="w-full min-w-0 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                   onChange={(event) => loadProfileByKey(event.target.value)}
                   value=""
                 >
@@ -468,11 +468,13 @@ export default function Home() {
                 <button
                   aria-controls="template-help-panel"
                   aria-expanded={templateHelpOpen}
-                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-[#27322f] transition duration-200 hover:bg-[#f3ecdf]"
+                  className="flex w-full min-w-0 items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-[#27322f] transition duration-200 hover:bg-[#f3ecdf]"
                   onClick={() => setTemplateHelpOpen((isOpen) => !isOpen)}
                   type="button"
                 >
-                  How to Create a Template
+                  <span className="min-w-0 break-words">
+                    How to Create a Template
+                  </span>
                   <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-[#75684f]">
                     {templateHelpOpen ? "Hide" : "Show"}
                   </span>
@@ -497,26 +499,27 @@ export default function Home() {
                 ) : null}
               </div>
 
-              <label className="grid gap-2 text-sm font-medium text-[#394541]">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-[#394541]">
                 Assignment/Profile Name
                 <input
-                  className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                  className="w-full min-w-0 rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                   onChange={(event) => setProfileName(event.target.value)}
                   value={profileName}
                 />
               </label>
 
               <button
-                className="rounded-xl bg-[#23413d] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_5px_12px_rgba(32,38,35,0.14)] transition duration-200 hover:bg-[#2d4a43]"
+                className="w-full min-w-0 rounded-xl bg-[#23413d] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_5px_12px_rgba(32,38,35,0.14)] transition duration-200 hover:bg-[#2d4a43]"
                 onClick={saveCurrentProfile}
                 type="button"
               >
                 Save Assignment Template
               </button>
-              <p className="text-xs leading-5 text-[#75684f]">
-                Saves course, prompt, rubric, review mode, citation style, and feedback focus.
+              <p className="break-words text-xs leading-5 text-[#75684f]">
+                Saves course, prompt, rubric, review mode, citation style, and
+                feedback focus.
               </p>
-              <p className="text-xs leading-5 text-[#75684f]">
+              <p className="break-words text-xs leading-5 text-[#75684f]">
                 Templates save assignment setup only. Student name, student
                 submission, and output are not saved.
               </p>
@@ -532,7 +535,7 @@ export default function Home() {
                     <div className="mt-2 grid gap-1">
                       {course.assignments.map((assignment) => (
                         <button
-                          className="rounded-xl px-3 py-2 text-left transition duration-200 hover:bg-[#f3ecdf]"
+                          className="w-full min-w-0 rounded-xl px-3 py-2 text-left transition duration-200 hover:bg-[#f3ecdf]"
                           key={`${course.courseLevel}-${assignment.name}`}
                           onClick={() =>
                             loadProfile(
@@ -544,10 +547,10 @@ export default function Home() {
                           }
                           type="button"
                         >
-                          <span className="block text-xs font-medium uppercase tracking-[0.08em] text-[#8a7d66]">
+                          <span className="block break-words text-xs font-medium uppercase tracking-[0.08em] text-[#8a7d66]">
                             {course.courseLevel}
                           </span>
-                          <span className="mt-0.5 block text-sm font-semibold leading-5 text-[#2f3a36]">
+                          <span className="mt-0.5 block break-words text-sm font-semibold leading-5 text-[#2f3a36]">
                             {assignment.name}
                           </span>
                         </button>
