@@ -21,6 +21,7 @@ type AssignmentProfile = {
   assignmentRequirements: string;
   rubric: string;
   citationStyle: CitationStyle;
+  mode: Mode;
 };
 
 const STORAGE_KEY = "mindful-academic-review-profiles";
@@ -36,7 +37,7 @@ const ASSIGNMENT_TYPES: AssignmentType[] = [
   "Short Response",
 ];
 
-function getSavedProfiles() {
+function getSavedProfiles(): AssignmentProfile[] {
   if (typeof window === "undefined") {
     return [];
   }
@@ -48,9 +49,23 @@ function getSavedProfiles() {
   }
 
   try {
-    const parsed = JSON.parse(savedProfiles) as AssignmentProfile[];
+    const parsed = JSON.parse(savedProfiles) as Partial<AssignmentProfile>[];
 
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter((profile) => profile.name && profile.courseLevel)
+      .map((profile) => ({
+        name: profile.name ?? "",
+        courseLevel: profile.courseLevel ?? "",
+        assignmentPrompt: profile.assignmentPrompt ?? "",
+        assignmentRequirements: profile.assignmentRequirements ?? "",
+        rubric: profile.rubric ?? "",
+        citationStyle: profile.citationStyle ?? "APA",
+        mode: profile.mode ?? "basic",
+      }));
   } catch {
     return [];
   }
@@ -67,17 +82,30 @@ export default function Home() {
   const [studentSubmission, setStudentSubmission] = useState("");
   const [rubric, setRubric] = useState("");
   const [citationStyle, setCitationStyle] = useState<CitationStyle>("APA");
-  const [profilesOpen, setProfilesOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
-  const [selectedProfile, setSelectedProfile] = useState("");
   const [profiles, setProfiles] =
     useState<AssignmentProfile[]>(getSavedProfiles);
   const [output, setOutput] = useState(PLACEHOLDER_OUTPUT);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const selectedProfileData = useMemo(
-    () => profiles.find((profile) => profile.name === selectedProfile),
-    [profiles, selectedProfile],
+  const groupedProfiles = useMemo(
+    () =>
+      profiles.reduce<{ courseLevel: string; profiles: AssignmentProfile[] }[]>(
+        (groups, profile) => {
+          const existingGroup = groups.find(
+            (group) => group.courseLevel === profile.courseLevel,
+          );
+
+          if (existingGroup) {
+            existingGroup.profiles.push(profile);
+            return groups;
+          }
+
+          return [...groups, { courseLevel: profile.courseLevel, profiles: [profile] }];
+        },
+        [],
+      ),
+    [profiles],
   );
 
   function persistProfiles(nextProfiles: AssignmentProfile[]) {
@@ -87,52 +115,48 @@ export default function Home() {
 
   function saveCurrentProfile() {
     const trimmedName = profileName.trim();
+    const trimmedCourseLevel = courseLevel.trim();
 
-    if (!trimmedName) {
+    if (!trimmedName || !trimmedCourseLevel) {
+      setOutput(
+        "Please enter Course / Grade Level and Assignment/Profile Name before saving.",
+      );
       return;
     }
 
     const nextProfile: AssignmentProfile = {
       name: trimmedName,
-      courseLevel,
+      courseLevel: trimmedCourseLevel,
       assignmentPrompt,
       assignmentRequirements,
       rubric,
       citationStyle,
+      mode,
     };
 
     const remainingProfiles = profiles.filter(
-      (profile) => profile.name !== trimmedName,
+      (profile) =>
+        !(
+          profile.name === trimmedName &&
+          profile.courseLevel === trimmedCourseLevel
+        ),
     );
-    const nextProfiles = [...remainingProfiles, nextProfile].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    const nextProfiles = [...remainingProfiles, nextProfile].sort((a, b) => {
+      const courseComparison = a.courseLevel.localeCompare(b.courseLevel);
+
+      return courseComparison || a.name.localeCompare(b.name);
+    });
 
     persistProfiles(nextProfiles);
-    setSelectedProfile(trimmedName);
   }
 
-  function loadSelectedProfile() {
-    if (!selectedProfileData) {
-      return;
-    }
-
-    setCourseLevel(selectedProfileData.courseLevel);
-    setAssignmentPrompt(selectedProfileData.assignmentPrompt);
-    setAssignmentRequirements(selectedProfileData.assignmentRequirements);
-    setRubric(selectedProfileData.rubric);
-    setCitationStyle(selectedProfileData.citationStyle);
-  }
-
-  function deleteSelectedProfile() {
-    if (!selectedProfile) {
-      return;
-    }
-
-    persistProfiles(
-      profiles.filter((profile) => profile.name !== selectedProfile),
-    );
-    setSelectedProfile("");
+  function loadProfile(profile: AssignmentProfile) {
+    setCourseLevel(profile.courseLevel);
+    setAssignmentPrompt(profile.assignmentPrompt);
+    setAssignmentRequirements(profile.assignmentRequirements);
+    setRubric(profile.rubric);
+    setCitationStyle(profile.citationStyle);
+    setMode(profile.mode);
   }
 
   function clearStudentOnly() {
@@ -233,7 +257,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#f7f5ef] px-5 py-8 text-[#1d2524] sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <header className="border-b border-[#d9d2c4] pb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f5e43]">
             Mindful Academic Review
@@ -246,7 +270,60 @@ export default function Home() {
           </p>
         </header>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <section className="mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)_380px]">
+          <aside className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm lg:sticky lg:top-8 lg:self-start">
+            <h2 className="text-base font-semibold text-[#1d2524]">
+              Saved Courses & Assignments
+            </h2>
+
+            <div className="mt-5 grid gap-4">
+              <label className="grid gap-2 text-sm font-medium text-[#394541]">
+                Assignment/Profile Name
+                <input
+                  className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                  onChange={(event) => setProfileName(event.target.value)}
+                  value={profileName}
+                />
+              </label>
+
+              <button
+                className="rounded-md bg-[#28433f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d312e]"
+                onClick={saveCurrentProfile}
+                type="button"
+              >
+                Save Current Assignment
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-5 border-t border-[#e2dacb] pt-5">
+              {groupedProfiles.length > 0 ? (
+                groupedProfiles.map((group) => (
+                  <div key={group.courseLevel}>
+                    <h3 className="text-sm font-semibold text-[#1d2524]">
+                      {group.courseLevel}
+                    </h3>
+                    <div className="mt-2 grid gap-1.5">
+                      {group.profiles.map((profile) => (
+                        <button
+                          className="rounded-md px-3 py-2 text-left text-sm text-[#56615d] transition hover:bg-[#f7f5ef] hover:text-[#1d2524]"
+                          key={`${profile.courseLevel}-${profile.name}`}
+                          onClick={() => loadProfile(profile)}
+                          type="button"
+                        >
+                          {profile.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-[#56615d]">
+                  Saved assignments will appear here.
+                </p>
+              )}
+            </div>
+          </aside>
+
           <div className="space-y-6">
             <section className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm">
               <h2 className="text-base font-semibold text-[#1d2524]">
@@ -372,76 +449,6 @@ export default function Home() {
                   </div>
                 ) : null}
               </div>
-            </section>
-
-            <section className="rounded-lg border border-[#d9d2c4] bg-white shadow-sm">
-              <button
-                className="flex w-full items-center justify-between px-5 py-4 text-left text-base font-semibold text-[#1d2524]"
-                onClick={() => setProfilesOpen((isOpen) => !isOpen)}
-                type="button"
-              >
-                Saved Assignment Profiles
-                <span className="text-sm text-[#6f5e43]">
-                  {profilesOpen ? "Collapse" : "Expand"}
-                </span>
-              </button>
-
-              {profilesOpen ? (
-                <div className="grid gap-4 border-t border-[#e2dacb] p-5">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="grid gap-2 text-sm font-medium text-[#394541]">
-                      Profile Name
-                      <input
-                        className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
-                        onChange={(event) => setProfileName(event.target.value)}
-                        value={profileName}
-                      />
-                    </label>
-
-                    <label className="grid gap-2 text-sm font-medium text-[#394541]">
-                      Selected Profile
-                      <select
-                        className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
-                        onChange={(event) =>
-                          setSelectedProfile(event.target.value)
-                        }
-                        value={selectedProfile}
-                      >
-                        <option value="">Select a profile</option>
-                        {profiles.map((profile) => (
-                          <option key={profile.name} value={profile.name}>
-                            {profile.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      className="rounded-md bg-[#28433f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d312e]"
-                      onClick={saveCurrentProfile}
-                      type="button"
-                    >
-                      Save Current Assignment as Profile
-                    </button>
-                    <button
-                      className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
-                      onClick={loadSelectedProfile}
-                      type="button"
-                    >
-                      Load Selected Profile
-                    </button>
-                    <button
-                      className="rounded-md border border-[#b98979] bg-white px-4 py-2.5 text-sm font-semibold text-[#7a3327] transition hover:border-[#7a3327]"
-                      onClick={deleteSelectedProfile}
-                      type="button"
-                    >
-                      Delete Selected Profile
-                    </button>
-                  </div>
-                </div>
-              ) : null}
             </section>
 
             <button
