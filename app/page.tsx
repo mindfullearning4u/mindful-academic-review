@@ -101,7 +101,10 @@ export default function Home() {
             return groups;
           }
 
-          return [...groups, { courseLevel: profile.courseLevel, profiles: [profile] }];
+          return [
+            ...groups,
+            { courseLevel: profile.courseLevel, profiles: [profile] },
+          ];
         },
         [],
       ),
@@ -256,22 +259,22 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f5ef] px-5 py-8 text-[#1d2524] sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-7xl">
-        <header className="border-b border-[#d9d2c4] pb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f5e43]">
+    <main className="min-h-screen bg-[#f4f1ea] px-5 py-8 text-[#1f2927] sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-[1500px]">
+        <header className="border-b border-[#ded8ce] pb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#75684f]">
             Mindful Academic Review
           </p>
-          <h1 className="mt-3 text-4xl font-semibold text-[#16201f] sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-[#17211f] sm:text-5xl">
             Mindful Academic Review
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#56615d]">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[#5b6661] sm:text-lg">
             Structured academic feedback for teachers and instructors.
           </p>
         </header>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)_380px]">
-          <aside className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm lg:sticky lg:top-8 lg:self-start">
+        <section className="mt-8 grid gap-7 lg:grid-cols-[300px_minmax(0,1fr)_400px]">
+          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">
               Saved Courses & Assignments
             </h2>
@@ -280,14 +283,14 @@ export default function Home() {
               <label className="grid gap-2 text-sm font-medium text-[#394541]">
                 Assignment/Profile Name
                 <input
-                  className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                  className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                   onChange={(event) => setProfileName(event.target.value)}
                   value={profileName}
                 />
               </label>
 
               <button
-                className="rounded-md bg-[#28433f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d312e]"
+                className="rounded-lg bg-[#23413d] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(32,38,35,0.12)] transition hover:bg-[#1c3431]"
                 onClick={saveCurrentProfile}
                 type="button"
               >
@@ -295,17 +298,17 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="mt-6 space-y-5 border-t border-[#e2dacb] pt-5">
+            <div className="mt-6 space-y-5 border-t border-[#e3ddd3] pt-5">
               {groupedProfiles.length > 0 ? (
                 groupedProfiles.map((group) => (
                   <div key={group.courseLevel}>
-                    <h3 className="text-sm font-semibold text-[#1d2524]">
+                    <h3 className="text-sm font-semibold text-[#27322f]">
                       {group.courseLevel}
                     </h3>
                     <div className="mt-2 grid gap-1.5">
                       {group.profiles.map((profile) => (
                         <button
-                          className="rounded-md px-3 py-2 text-left text-sm text-[#56615d] transition hover:bg-[#f7f5ef] hover:text-[#1d2524]"
+                          className="rounded-lg px-3 py-2 text-left text-sm leading-5 text-[#5b6661] transition hover:bg-[#f4f1ea] hover:text-[#1d2524]"
                           key={`${profile.courseLevel}-${profile.name}`}
                           onClick={() => loadProfile(profile)}
                           type="button"
@@ -325,17 +328,17 @@ export default function Home() {
           </aside>
 
           <div className="space-y-6">
-            <section className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
                 Review Mode
               </h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {(["basic", "advanced"] as Mode[]).map((modeOption) => (
                   <button
-                    className={`rounded-md border px-4 py-3 text-left text-sm font-semibold transition ${
+                    className={`rounded-lg border px-4 py-3 text-left text-sm font-semibold transition ${
                       mode === modeOption
-                        ? "border-[#28433f] bg-[#28433f] text-white"
-                        : "border-[#d9d2c4] bg-[#fbfaf7] text-[#394541] hover:border-[#9b8a72]"
+                        ? "border-[#23413d] bg-[#23413d] text-white shadow-[0_1px_2px_rgba(32,38,35,0.12)]"
+                        : "border-[#ded8ce] bg-[#fbfaf7] text-[#394541] hover:border-[#9b8a72] hover:bg-[#f7f3ea]"
                     }`}
                     key={modeOption}
                     onClick={() => setMode(modeOption)}
@@ -347,7 +350,7 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)]">
               <h2 className="text-base font-semibold text-[#1d2524]">
                 Assignment Details
               </h2>
@@ -357,7 +360,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Student Name
                     <input
-                      className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                       onChange={(event) => setStudentName(event.target.value)}
                       value={studentName}
                     />
@@ -366,7 +369,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Course / Grade Level
                     <input
-                      className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                       onChange={(event) => setCourseLevel(event.target.value)}
                       value={courseLevel}
                     />
@@ -375,7 +378,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Assignment Type
                     <select
-                      className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                       onChange={(event) =>
                         setAssignmentType(event.target.value as AssignmentType)
                       }
@@ -391,7 +394,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Assignment Prompt
                   <textarea
-                    className="min-h-28 rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-28 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setAssignmentPrompt(event.target.value)
                     }
@@ -402,7 +405,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Assignment Requirements / Instructions
                   <textarea
-                    className="min-h-32 rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-32 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setAssignmentRequirements(event.target.value)
                     }
@@ -413,7 +416,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-medium text-[#394541]">
                   Student Submission
                   <textarea
-                    className="min-h-52 rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                    className="min-h-56 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                     onChange={(event) =>
                       setStudentSubmission(event.target.value)
                     }
@@ -422,11 +425,11 @@ export default function Home() {
                 </label>
 
                 {mode === "advanced" ? (
-                  <div className="grid gap-5 rounded-md border border-[#e2dacb] bg-[#fbfaf7] p-4">
+                  <div className="grid gap-5 rounded-xl border border-[#e3ddd3] bg-[#fbfaf7] p-5">
                     <label className="grid gap-2 text-sm font-medium text-[#394541]">
                       Rubric
                       <textarea
-                        className="min-h-36 rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                        className="min-h-36 rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                         onChange={(event) => setRubric(event.target.value)}
                         value={rubric}
                       />
@@ -435,7 +438,7 @@ export default function Home() {
                     <label className="grid gap-2 text-sm font-medium text-[#394541] sm:max-w-xs">
                       Citation Style
                       <select
-                        className="rounded-md border border-[#cfc6b6] bg-white px-3 py-2.5 text-base outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                        className="rounded-lg border border-[#d7d0c2] bg-[#fffdf8] px-3.5 py-2.5 text-base text-[#1f2927] outline-none transition focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
                         onChange={(event) =>
                           setCitationStyle(event.target.value as CitationStyle)
                         }
@@ -452,7 +455,7 @@ export default function Home() {
             </section>
 
             <button
-              className="w-full rounded-md bg-[#16201f] px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-[#28433f] disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full rounded-lg bg-[#17211f] px-5 py-3.5 text-base font-semibold text-white shadow-[0_2px_5px_rgba(32,38,35,0.14)] transition hover:bg-[#23413d] disabled:cursor-not-allowed disabled:opacity-70"
               disabled={isGenerating}
               onClick={generateFeedback}
               type="button"
@@ -460,25 +463,25 @@ export default function Home() {
               {isGenerating ? "Generating Feedback..." : "Generate Feedback"}
             </button>
 
-            <section className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)]">
               <h2 className="text-base font-semibold text-[#1d2524]">Reset</h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
-                  className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
+                  className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
                   onClick={clearStudentOnly}
                   type="button"
                 >
                   Clear Student Only
                 </button>
                 <button
-                  className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
+                  className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
                   onClick={clearOutputOnly}
                   type="button"
                 >
                   Clear Output Only
                 </button>
                 <button
-                  className="rounded-md border border-[#b98979] bg-white px-4 py-2.5 text-sm font-semibold text-[#7a3327] transition hover:border-[#7a3327]"
+                  className="rounded-lg border border-[#d0b7ae] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#7a3327] transition hover:border-[#7a3327] hover:bg-[#fbf3f0]"
                   onClick={clearAll}
                   type="button"
                 >
@@ -488,21 +491,21 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm lg:sticky lg:top-8 lg:self-start">
+          <aside className="rounded-xl border border-[#ded8ce] bg-[#fffefa] p-6 shadow-[0_1px_3px_rgba(32,38,35,0.06)] lg:sticky lg:top-8 lg:self-start">
             <h2 className="text-base font-semibold text-[#1d2524]">Output</h2>
-            <div className="mt-4 min-h-80 whitespace-pre-wrap rounded-md border border-[#d9d2c4] bg-[#fbfaf7] p-4 text-sm leading-6 text-[#56615d]">
+            <div className="mt-4 min-h-[28rem] whitespace-pre-wrap rounded-xl border border-[#e3ddd3] bg-[#fbfaf7] p-5 text-sm leading-7 text-[#46524e]">
               {output}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <button
-                className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
+                className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
                 onClick={copyOutput}
                 type="button"
               >
                 Copy Output
               </button>
               <button
-                className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
+                className="rounded-lg border border-[#c9c1b3] bg-[#fffdf8] px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f] hover:bg-[#f7f3ea]"
                 onClick={downloadOutput}
                 type="button"
               >
