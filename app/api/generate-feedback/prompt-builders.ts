@@ -109,7 +109,7 @@ const ASSIGNMENT_BEHAVIOR_MATRIX: Record<AssignmentType, AssignmentBehavior> = {
       "flow",
       "assignment completion",
     ],
-    targetLength: "75-125 words",
+    targetLength: "60-110 words",
   },
   "Research Paper": {
     evaluate: [
@@ -121,7 +121,7 @@ const ASSIGNMENT_BEHAVIOR_MATRIX: Record<AssignmentType, AssignmentBehavior> = {
       "critical thinking",
     ],
     avoid: ["excessive line-by-line critique"],
-    targetLength: "75-150 words",
+    targetLength: "75-135 words",
   },
   "Case Assignment": {
     evaluate: [
@@ -131,7 +131,7 @@ const ASSIGNMENT_BEHAVIOR_MATRIX: Record<AssignmentType, AssignmentBehavior> = {
       "real-world connection",
       "critical thinking",
     ],
-    targetLength: "75-125 words",
+    targetLength: "60-110 words",
   },
   "Final Project": {
     evaluate: [
@@ -145,6 +145,8 @@ const ASSIGNMENT_BEHAVIOR_MATRIX: Record<AssignmentType, AssignmentBehavior> = {
       "extensive revision coaching because the course or project is ending",
     ],
     targetLength: "75-125 words",
+    notes:
+      "Summarize what was strong and what was lacking. Do not give extensive revision coaching.",
   },
   "Final Paper": {
     evaluate: [
@@ -158,6 +160,8 @@ const ASSIGNMENT_BEHAVIOR_MATRIX: Record<AssignmentType, AssignmentBehavior> = {
       "extensive revision coaching because the course or project is ending",
     ],
     targetLength: "75-125 words",
+    notes:
+      "Summarize what was strong and what was lacking. Do not give extensive revision coaching.",
   },
   "Graduate-Level / Thesis / Dissertation": {
     evaluate: [
@@ -265,6 +269,7 @@ Output Formatting:
 - Make the feedback flow like realistic LMS grading comments or professor assignment notes, not a generated analysis report.
 - Use short, natural commentary blocks.
 - Keep comments concise and conversational-professional.
+- Feedback should usually be one short paragraph.
 - Use short paragraphs that are easy to paste into LMS grading comments.
 - Use bullet points only where helpful.
 - Leave one blank line between major sections.
@@ -281,19 +286,18 @@ Output Formatting:
 - Keep the visual presentation clean, calm, approachable, academically professional, and emotionally neutral/supportive.`.trim();
 }
 
-function formatLengthGuidance(mode: FeedbackMode, request: FeedbackRequest) {
-  const wordLimit =
-    mode === "basic"
-      ? "Basic Mode: 100-175 words maximum."
-      : "Advanced Mode: 175-300 words maximum unless a rubric requires more detail.";
+function formatLengthGuidance(request: FeedbackRequest) {
+  const behavior = ASSIGNMENT_BEHAVIOR_MATRIX[request.assignmentType];
+  const wordLimit = `${request.assignmentType}: ${behavior.targetLength}.`;
   const rubricOverride = request.rubric.trim()
     ? "Rubric override: give each rubric category 1 concise sentence; use a maximum of 2 short sentences only when necessary."
-    : `Assignment behavior target: follow the ${request.assignmentType} target length from the Assignment Behavior Matrix.`;
+    : `Assignment behavior target: stay within ${behavior.targetLength}.`;
 
   return `
 Length and Prioritization:
 - Keep feedback concise and efficient, like an instructor grading under practical time constraints.
 - Do not write essay-length grading responses.
+- Do not exceed the target length unless the instructor explicitly requests detailed feedback.
 - Prioritize the most important strengths and weaknesses only.
 - Focus on the top 2-3 priorities for improvement.
 - Keep feedback concise enough that students will actually read it.
@@ -315,8 +319,8 @@ Instructor Voice:
 - Write directly to the student in a natural teacher or professor voice.
 - Begin by recognizing what the student did well before naming needed improvements.
 - Acknowledge effort and progress when appropriate, but do not overpraise weak work.
-- Use direct language such as "You did well with...", "You addressed...", "You need to strengthen...", "Your next step is...", "Make sure you...", and "This would be stronger if...".
-- Use supportive guidance such as "Continue building on...", "You are moving in the right direction...", "Strengthening this area would improve your paper further...", and "Reach out if you need additional clarification or support."
+- Use direct language such as "You did well with...", "You addressed...", "You showed...", "Continue strengthening...", "Make sure to...", and "This would be stronger if...".
+- Use supportive guidance such as "Reach out if you need additional clarification or support."
 - Keep the tone encouraging, motivating, constructive, caring, professional, academically focused, human, specific, and concise.
 - Maintain academic standards and be assertive and clear about needed improvements.
 - Guide revision and growth without sounding discouraging.
@@ -324,6 +328,7 @@ Instructor Voice:
 - Avoid harsh wording, overly critical tone, robotic criticism, and negative or punitive language.
 - Avoid robotic, overly formal, overly polished, or generic phrasing.
 - Do not use AI-sounding phrases such as "overall, this response demonstrates", "it is important to note", "this submission effectively", "the student should consider", or "in conclusion".
+- Avoid repeated phrases, template language, and overly polished AI wording.
 - Avoid generic transitions and filler. Give concrete feedback tied to the assignment and submission.`.trim();
 }
 
@@ -367,7 +372,7 @@ ${formatInstructorVoiceGuidance()}
 
 ${formatPersonalizationGuidance()}
 
-${formatLengthGuidance("basic", request)}
+${formatLengthGuidance(request)}
 
 ${formatOutputGuidance()}
 
@@ -428,7 +433,7 @@ ${formatInstructorVoiceGuidance()}
 
 ${formatPersonalizationGuidance()}
 
-${formatLengthGuidance("advanced", request)}
+${formatLengthGuidance(request)}
 
 ${formatOutputGuidance()}
 
