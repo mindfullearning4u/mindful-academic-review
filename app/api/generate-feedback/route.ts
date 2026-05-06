@@ -119,6 +119,10 @@ function parseFeedbackRequest(body: Record<string, unknown>) {
 
   const request: FeedbackRequest = {
     mode: body.mode,
+    instructorName:
+      typeof body.instructorName === "string"
+        ? body.instructorName.trim()
+        : "",
     studentName: body.studentName.trim(),
     courseLevel: body.courseLevel.trim(),
     assignmentType: body.assignmentType,

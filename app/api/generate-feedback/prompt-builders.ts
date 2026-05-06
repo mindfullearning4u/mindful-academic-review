@@ -25,6 +25,7 @@ export type AssignmentType =
 
 export type FeedbackRequest = {
   mode: FeedbackMode;
+  instructorName: string;
   studentName: string;
   courseLevel: string;
   assignmentType: AssignmentType;
@@ -38,6 +39,9 @@ export type FeedbackRequest = {
 
 function formatAssignmentContext(request: FeedbackRequest) {
   return `
+Instructor Name:
+${request.instructorName || "Not provided"}
+
 Student Name:
 ${request.studentName}
 
@@ -317,11 +321,15 @@ function formatInstructorVoiceGuidance() {
   return `
 Instructor Voice:
 - Write directly to the student in a natural teacher or professor voice.
+- If student name is provided, begin the feedback with the student's name followed by a comma on its own line, such as "Eric,".
+- If instructor name is provided, end the feedback with the instructor name on a separate line. Do not add a signature placeholder if no instructor name is provided.
+- Do not add extra closing phrases before the signature unless they fit naturally.
 - Begin by recognizing what the student did well before naming needed improvements.
 - Acknowledge effort and progress when appropriate, but do not overpraise weak or underdeveloped work.
 - Praise must match actual submission quality.
 - Do not give strong praise just because the student mentioned required terms.
 - Use direct language such as "You did well with...", "You addressed...", "You showed...", "Continue strengthening...", "Make sure to...", and "This would be stronger if...".
+- For weak or partial submissions, use direct but supportive wording such as "Although you addressed each question, you need more in-depth analysis", "You identified the correct terms, but the response needs more explanation", "Definition alone does not show full understanding", or "Continue thinking critically and add more substance and analysis."
 - Use supportive guidance such as "Reach out if you need additional clarification or support."
 - Keep the tone encouraging, motivating, constructive, caring, professional, academically focused, human, specific, and concise.
 - Maintain academic standards and be assertive and clear about needed improvements.
@@ -333,6 +341,7 @@ Instructor Voice:
 - Do not use generic praise phrases such as "solid submission", "solid discussion", "strong effort", "demonstrates understanding", "effectively addresses", "well done overall", "thoroughly explains", "insightful response", "excellent analysis", "strong critical thinking", or "demonstrates comprehension".
 - When giving praise, name what the student actually did in the submission.
 - Replace generic praise with specific instructor wording, such as "You answered the questions clearly and stayed focused on the discussion topic" or "Your explanation of the external environment showed good understanding of how businesses are affected by outside factors."
+- Do not say "answered clearly" unless the response is complete, accurate, and developed.
 - Avoid repeated phrases, template language, and overly polished AI wording.
 - Avoid generic transitions and filler. Give concrete feedback tied to the assignment and submission.`.trim();
 }
@@ -341,12 +350,17 @@ function formatContentDepthGuidance() {
   return `
 Content Depth and Praise Calibration:
 - Check whether the student answered the prompt, explained the answer enough, applied key concepts, used examples or connections, and showed analysis beyond listing or summary.
+- Distinguish between addressed, attempted, and fully answered.
+- Addressed means the student responded to the item but may not have fully developed it.
+- Attempted means the response shows partial effort but is incomplete, vague, inaccurate, or underdeveloped.
+- Fully answered means the response is complete, accurate, and developed with explanation, support, or application.
 - Distinguish between identifying required terms and actually explaining, applying, or developing them.
 - If the student only lists concepts or defines them briefly without connecting ideas to the prompt, describe this as limited development.
 - Surface-level answer: lists terms, defines briefly, gives minimal explanation, or does not connect ideas to the prompt.
 - Adequate answer: answers the prompt, explains key ideas, includes some support, and shows basic understanding.
 - Strong answer: explains concepts clearly, provides examples, connects ideas back to the prompt, and demonstrates analysis or application.
 - If a prompt asks about multiple required concepts and the student only lists them, say that the response identifies the concepts but needs more explanation of how each one relates to the prompt.
+- Reference specific assignment questions when useful, such as "For Question 1..." or "For Question 2...", but only when the prompt or submission clearly uses question numbering.
 - Weak or underdeveloped work should receive clear, direct feedback while staying supportive and professional.
 - Keep this scrutiny concise; do not turn it into a long report.`.trim();
 }

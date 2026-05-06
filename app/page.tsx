@@ -184,6 +184,7 @@ function toAssignmentProfile(
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("basic");
+  const [instructorName, setInstructorName] = useState("");
   const [studentName, setStudentName] = useState("");
   const [courseLevel, setCourseLevel] = useState("");
   const [assignmentType, setAssignmentType] =
@@ -269,6 +270,7 @@ export default function Home() {
   }
 
   function clearAll() {
+    setInstructorName("");
     setStudentName("");
     setCourseLevel("");
     setAssignmentType("Essay");
@@ -320,6 +322,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           mode,
+          instructorName,
           studentName,
           courseLevel,
           assignmentType,
@@ -480,6 +483,17 @@ export default function Home() {
 
               <div className="mt-6 grid gap-5">
                 <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="grid gap-2 text-sm font-medium text-[#394541]">
+                    Instructor Name
+                    <input
+                      className="rounded-xl border border-[#d8cebd] bg-[#fffdf7] px-3.5 py-2.5 text-base text-[#232b28] outline-none transition duration-200 placeholder:text-[#8b8478] focus:border-[#28433f] focus:ring-2 focus:ring-[#28433f]/15"
+                      onChange={(event) =>
+                        setInstructorName(event.target.value)
+                      }
+                      value={instructorName}
+                    />
+                  </label>
+
                   <label className="grid gap-2 text-sm font-medium text-[#394541]">
                     Student Name
                     <input
