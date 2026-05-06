@@ -331,26 +331,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#f2eee6] px-5 py-8 text-[#232b28] sm:px-8 lg:px-10">
       <div className="mx-auto max-w-[1680px]">
-        <header className="border-b border-[#ddd4c6]/80 pb-9">
+        <header className="rounded-2xl border border-[#d7cdbc]/80 bg-[#e9e1d4] px-6 py-7 shadow-[0_8px_24px_rgba(43,38,30,0.06)]">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc5b5] bg-[#23413d] text-[0.68rem] font-semibold tracking-[0.08em] text-[#fffaf2] shadow-[0_4px_10px_rgba(32,38,35,0.16)]">
-              <span className="absolute left-2 top-2 h-6 w-2.5 rounded-sm border border-[#d8cebd]/80 border-r-0" />
-              <span className="absolute right-2 top-2 h-6 w-2.5 rounded-sm border border-[#d8cebd]/80 border-l-0" />
-              <span className="relative mt-1">MAR</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#c6bba9] bg-[#203b37] text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#fff8ea] shadow-[0_5px_14px_rgba(32,38,35,0.14)]">
+              MAR
             </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#75684f]">
+            <div className="pt-0.5">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#685d48]">
                 Academic Review Workspace
-              </p>
-              <p className="text-lg font-semibold tracking-tight text-[#17211f]">
-                Mindful Academic Review
               </p>
             </div>
           </div>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#17211f] sm:text-4xl">
+          <h1 className="mt-7 text-3xl font-semibold tracking-tight text-[#17211f] sm:text-4xl">
             Mindful Academic Review
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[#5b6661] sm:text-lg">
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[#56625e] sm:text-lg">
             Structured academic feedback for teachers and instructors.
           </p>
         </header>
