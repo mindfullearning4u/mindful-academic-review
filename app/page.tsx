@@ -135,6 +135,28 @@ export default function Home() {
     setSelectedProfile("");
   }
 
+  function clearStudentOnly() {
+    setStudentName("");
+    setStudentSubmission("");
+    setOutput(PLACEHOLDER_OUTPUT);
+  }
+
+  function clearOutputOnly() {
+    setOutput(PLACEHOLDER_OUTPUT);
+  }
+
+  function clearAll() {
+    setStudentName("");
+    setCourseLevel("");
+    setAssignmentType("Essay");
+    setAssignmentPrompt("");
+    setAssignmentRequirements("");
+    setStudentSubmission("");
+    setRubric("");
+    setCitationStyle("APA");
+    setOutput(PLACEHOLDER_OUTPUT);
+  }
+
   async function generateFeedback() {
     const requiredFields = [
       { label: "Student Name", value: studentName },
@@ -430,6 +452,33 @@ export default function Home() {
             >
               {isGenerating ? "Generating Feedback..." : "Generate Feedback"}
             </button>
+
+            <section className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm">
+              <h2 className="text-base font-semibold text-[#1d2524]">Reset</h2>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
+                  onClick={clearStudentOnly}
+                  type="button"
+                >
+                  Clear Student Only
+                </button>
+                <button
+                  className="rounded-md border border-[#b8aa95] bg-white px-4 py-2.5 text-sm font-semibold text-[#394541] transition hover:border-[#28433f]"
+                  onClick={clearOutputOnly}
+                  type="button"
+                >
+                  Clear Output Only
+                </button>
+                <button
+                  className="rounded-md border border-[#b98979] bg-white px-4 py-2.5 text-sm font-semibold text-[#7a3327] transition hover:border-[#7a3327]"
+                  onClick={clearAll}
+                  type="button"
+                >
+                  Clear All
+                </button>
+              </div>
+            </section>
           </div>
 
           <aside className="rounded-lg border border-[#d9d2c4] bg-white p-5 shadow-sm lg:sticky lg:top-8 lg:self-start">
