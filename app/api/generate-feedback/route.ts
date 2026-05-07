@@ -4,12 +4,11 @@ import path from "node:path";
 import {
   buildAdvancedPrompt,
   buildBasicPrompt,
-  type AssignmentType,
-  type CitationStyle,
-  type FeedbackFocus,
   type FeedbackRequest,
-  type ServiceTier,
 } from "./prompt-builders";
+import { getSubscriptionAccess } from "@/lib/subscription/access";
+import { createClient } from "@/lib/supabase/server";
+import { validateFeedbackRequest } from "@/lib/validation/feedback-request";
 
 type OpenAITextContent = {
   type?: string;
@@ -38,107 +37,6 @@ async function getGradingStandards() {
   return readFile(GRADING_STANDARDS_PATH, "utf8");
 }
 
-function isServiceTier(value: unknown): value is ServiceTier {
-  return (
-    value === "Basic" ||
-    value === "Premium" ||
-    value === "Graduate / Research"
-  );
-}
-
-function isCitationStyle(value: unknown): value is CitationStyle {
-  return value === "APA" || value === "MLA" || value === "None";
-}
-
-function isAssignmentType(value: unknown): value is AssignmentType {
-  return (
-    value === "Essay" ||
-    value === "Discussion Post" ||
-    value === "Case Assignment" ||
-    value === "Research Paper" ||
-    value === "Reflection Paper" ||
-    value === "Peer Response" ||
-    value === "Final Project" ||
-    value === "Final Paper" ||
-    value === "Graduate-Level / Thesis / Dissertation" ||
-    value === "Quiz Response" ||
-    value === "Short Answer"
-  );
-}
-
-function isFeedbackFocus(value: unknown): value is FeedbackFocus {
-  return (
-    value === "Answered Prompt" ||
-    value === "APA / MLA" ||
-    value === "Organization" ||
-    value === "Grammar & Writing" ||
-    value === "Critical Thinking" ||
-    value === "Scholarly Sources" ||
-    value === "Content Accuracy" ||
-    value === "Concise Instructor Notes" ||
-    value === "Rubric Alignment"
-  );
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-function parseFeedbackRequest(body: Record<string, unknown>) {
-  if (!isCitationStyle(body.citationStyle)) {
-    return { error: "A valid citation style is required." };
-  }
-
-  if (!isAssignmentType(body.assignmentType)) {
-    return { error: "A valid assignment type is required." };
-  }
-
-  if (!isNonEmptyString(body.studentName)) {
-    return { error: "studentName is required." };
-  }
-
-  if (!isNonEmptyString(body.courseLevel)) {
-    return { error: "courseLevel is required." };
-  }
-
-  if (!isNonEmptyString(body.assignmentPrompt)) {
-    return { error: "assignmentPrompt is required." };
-  }
-
-  if (!isNonEmptyString(body.assignmentRequirements)) {
-    return { error: "assignmentRequirements is required." };
-  }
-
-  if (!isNonEmptyString(body.studentSubmission)) {
-    return { error: "studentSubmission is required." };
-  }
-
-  const feedbackFocus = Array.isArray(body.feedbackFocus)
-    ? body.feedbackFocus.filter(isFeedbackFocus)
-    : [];
-
-  const request: FeedbackRequest = {
-    serviceTier: isServiceTier(body.serviceTier)
-      ? body.serviceTier
-      : "Premium",
-    instructorName:
-      typeof body.instructorName === "string"
-        ? body.instructorName.trim()
-        : "",
-    studentName: body.studentName.trim(),
-    courseLevel: body.courseLevel.trim(),
-    assignmentType: body.assignmentType,
-    assignmentPrompt: body.assignmentPrompt.trim(),
-    assignmentRequirements: body.assignmentRequirements.trim(),
-    studentSubmission: body.studentSubmission.trim(),
-    rubric: typeof body.rubric === "string" ? body.rubric.trim() : "",
-    citationStyle: body.citationStyle,
-    feedbackFocus,
-  };
-
-  return { request };
-}
-
 function extractFeedback(response: OpenAIResponse) {
   if (response.output_text) {
     return response.output_text;
@@ -152,6 +50,27 @@ function extractFeedback(response: OpenAIResponse) {
   return textParts?.join("\n\n") ?? "";
 }
 
+async function logUsageEvent(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  request: FeedbackRequest,
+  success: boolean,
+  errorCode?: string,
+) {
+  await supabase.from("usage_events").insert({
+    event_type: "feedback_generation",
+    service_tier: request.serviceTier,
+    assignment_type: request.assignmentType,
+    citation_style: request.citationStyle,
+    prompt_char_count: request.assignmentPrompt.length,
+    requirements_char_count: request.assignmentRequirements.length,
+    rubric_char_count: request.rubric.length,
+    submission_char_count: request.studentSubmission.length,
+    feedback_focus: request.feedbackFocus,
+    success,
+    error_code: errorCode,
+  });
+}
+
 export async function POST(request: Request) {
   if (!process.env.OPENAI_API_KEY) {
     return Response.json(
@@ -160,7 +79,25 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: Record<string, unknown>;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return Response.json({ error: "Authentication required." }, { status: 401 });
+  }
+
+  const access = await getSubscriptionAccess(supabase, user.id, user.email);
+
+  if (!access.hasAccess) {
+    return Response.json(
+      { error: "Subscription access is not active." },
+      { status: 403 },
+    );
+  }
+
+  let body: unknown;
 
   try {
     body = (await request.json()) as Record<string, unknown>;
@@ -168,10 +105,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const parsed = parseFeedbackRequest(body);
+  const parsed = validateFeedbackRequest(body);
 
   if ("error" in parsed) {
-    return Response.json({ error: parsed.error }, { status: 400 });
+    return Response.json(
+      { error: parsed.error, details: parsed.details },
+      { status: 400 },
+    );
   }
 
   let gradingStandards: string;
@@ -179,6 +119,7 @@ export async function POST(request: Request) {
   try {
     gradingStandards = await getGradingStandards();
   } catch {
+    await logUsageEvent(supabase, parsed.request, false, "grading_standards");
     return Response.json(
       { error: "Unable to load grading standards." },
       { status: 500 },
@@ -211,6 +152,7 @@ export async function POST(request: Request) {
 
     data = (await openAIResponse.json()) as OpenAIResponse;
   } catch {
+    await logUsageEvent(supabase, parsed.request, false, "openai_unreachable");
     return Response.json(
       { error: "Unable to reach the feedback generation service." },
       { status: 502 },
@@ -218,6 +160,7 @@ export async function POST(request: Request) {
   }
 
   if (!openAIResponse.ok) {
+    await logUsageEvent(supabase, parsed.request, false, "openai_error");
     return Response.json(
       { error: data.error?.message ?? "Feedback generation failed." },
       { status: openAIResponse.status },
@@ -227,11 +170,14 @@ export async function POST(request: Request) {
   const feedback = extractFeedback(data);
 
   if (!feedback) {
+    await logUsageEvent(supabase, parsed.request, false, "empty_feedback");
     return Response.json(
       { error: "Feedback generation returned no text." },
       { status: 502 },
     );
   }
+
+  await logUsageEvent(supabase, parsed.request, true);
 
   return Response.json({ feedback });
 }
