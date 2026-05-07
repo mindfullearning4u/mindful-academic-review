@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 
+import { AuthSubmitButton } from "@/app/login/auth-submit-button";
 import { signIn, signUp } from "@/app/login/actions";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; status?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -17,7 +18,8 @@ export default async function LoginPage({
     redirect("/dashboard");
   }
 
-  const { message } = await searchParams;
+  const { message, status } = await searchParams;
+  const isSuccessMessage = status === "signup-confirmation";
 
   return (
     <main className="min-h-screen bg-[#f2eee6] px-5 py-10 text-[#232b28] sm:px-8">
@@ -40,7 +42,13 @@ export default async function LoginPage({
         </p>
 
         {message ? (
-          <p className="mt-5 rounded-xl border border-[#d2bbb1] bg-[#fbf0eb] px-4 py-3 text-sm text-[#7a3327]">
+          <p
+            className={`mt-5 rounded-xl border px-4 py-3 text-sm ${
+              isSuccessMessage
+                ? "border-[#b7cfbf] bg-[#edf7ef] text-[#245437]"
+                : "border-[#d2bbb1] bg-[#fbf0eb] text-[#7a3327]"
+            }`}
+          >
             {message}
           </p>
         ) : null}
@@ -68,20 +76,20 @@ export default async function LoginPage({
           </label>
 
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
-            <button
+            <AuthSubmitButton
               className="rounded-xl bg-[#23413d] px-4 py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-[#2d4a43]"
               formAction={signIn}
+              idleText="Sign In"
+              pendingText="Signing in..."
               type="submit"
-            >
-              Sign In
-            </button>
-            <button
+            />
+            <AuthSubmitButton
               className="rounded-xl border border-[#cfc5b5] bg-[#fffdf7] px-4 py-2.5 text-sm font-semibold text-[#394541] transition duration-200 hover:border-[#a99578] hover:bg-[#f3ecdf]"
               formAction={signUp}
+              idleText="Create Account"
+              pendingText="Creating account..."
               type="submit"
-            >
-              Create Account
-            </button>
+            />
           </div>
         </form>
       </section>

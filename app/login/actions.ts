@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { getAuthRedirectUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
 function getString(formData: FormData, key: string) {
@@ -40,13 +41,22 @@ export async function signUp(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: getAuthRedirectUrl("/dashboard"),
+    },
   });
 
   if (error) {
     redirect(`/login?message=${encodeURIComponent(error.message)}`);
+  }
+
+  if (!data.session) {
+    redirect(
+      "/login?status=signup-confirmation&message=Account%20created.%20Please%20check%20your%20email%20to%20confirm%20your%20account%20before%20signing%20in.",
+    );
   }
 
   redirect("/dashboard");
